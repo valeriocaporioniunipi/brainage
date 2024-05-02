@@ -10,30 +10,31 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 dataset = r"C:\Users\Jacopo\the_cartella\Magistrale\CMFEP\DATASETS\FEATURES\Brain_MRI_FS_ABIDE\FS_features_ABIDE_males_someGlobals.csv"
 
 X = np.column_stack((ShowCSV(dataset,"TotalGrayVol"), ShowCSV(dataset, "SEX")))
-y = np.array(ShowCSV(dataset,"AGE_AT_SCAN"))
+y = ShowCSV(dataset,"AGE_AT_SCAN")
 
-# Split data into training and testing sets
+# Splitting data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Normalize features
+# Normalizing features
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Define the model
+# Defining the model
 model = Sequential()
 model.add(layers.Dense(64, input_dim=X_train_scaled.shape[1], activation='relu'))
 model.add(layers.Dense(32, activation='relu'))
 model.add(layers.Dense(1, activation='linear'))  # Output layer
 
-# Compile the model
+# Compiling the model
 model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae'])
 
-# Train the model
+# Printing a summary of the model
+model.summary()
+
+# Training the model
 model.fit(X_train_scaled, y_train, epochs=50, batch_size=32, validation_split=0.1)
 
-# Evaluate the model
+# Evaluating the model
 loss, mae = model.evaluate(X_test_scaled, y_test)
 print("Mean Absolute Error on Test Set:", mae)
-
-#cosa fa con git
