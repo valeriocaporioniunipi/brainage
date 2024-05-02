@@ -1,4 +1,5 @@
 import numpy as np
+from abspath import AbsolutePath
 from csvreader import GetData
 import argparse
 from loguru import logger
@@ -23,6 +24,7 @@ def NeuralNetwork(filename, epochs = 50, summary_flag = False, hist_flag = False
     None. In the simpliest form just print the MAE (mean absolute error)
 
     """
+
     X = GetData(filename)
     y = GetData(filename,"AGE_AT_SCAN")
 
@@ -72,14 +74,22 @@ def main():
     parser = argparse.ArgumentParser(description='This program does stuff')
 
     parser.add_argument("filename", help = "Name of the file that has to be analized")
+    parser.add_argument("--data_folder", help = "Name of the folder containing data")
     parser.add_argument("epochs", help = "Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help = "Show the summary of the neural network")
     parser.add_argument("--history",action="store_true", help = "Show the history of the training")
+    parser.add_argument("--data",action="store_true", help = "Allows to write the local name of the file")
 
     args = parser.parse_args()
 
-    NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
-
+    if args.data == True:
+        if not args.data_folder:
+            parser.error("The data folder is not specified.")
+        else:
+            absolute_filename = AbsolutePath(args.filename, args.data_folder)
+            NeuralNetwork(absolute_filename, int(args.epochs), args.summary, args.history)
+    else:
+        NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
 
 if __name__ == "__main__":
 
