@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 dataset = r"C:\Users\Jacopo\the_cartella\Magistrale\CMFEP\DATASETS\FEATURES\Brain_MRI_FS_ABIDE\FS_features_ABIDE_males_someGlobals.csv"
 
-X = np.column_stack((ShowCSV(dataset,"TotalGrayVol"), ShowCSV(dataset, "SEX")))
+X = np.column_stack((ShowCSV(dataset)))
 y = ShowCSV(dataset,"AGE_AT_SCAN")
 
 # Splitting data into training and testing sets
