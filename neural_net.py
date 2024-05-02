@@ -49,4 +49,4 @@ model.fit(X_train_scaled, y_train, epochs=50, batch_size=32, validation_split=0.
 loss, mae = model.evaluate(X_test_scaled, y_test)
 print("Mean Absolute Error on Test Set:", mae)
 
-cosa fa con git
+#cosa fa con git
