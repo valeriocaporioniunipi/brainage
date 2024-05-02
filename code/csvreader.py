@@ -4,7 +4,8 @@ import os
 import pandas as pd
 from loguru import logger
 
-def GetData(csv_file, column_name = None, show_flag = False):
+
+def GetData(csv_file, column_name=None, show_flag=False):
     """
     GetData allows to read the data from a CSV file and converts them into a NumPy array.
     It can also show the entire dataset as a Pandas dataframe on terminal
@@ -26,17 +27,18 @@ def GetData(csv_file, column_name = None, show_flag = False):
     try:
         df = pd.read_csv(csv_file, delimiter=';')
         if column_name is None:
-            if show_flag == True:
+            if show_flag:
                 print(df)
-            network_input = np.array(df.values)[:, 2:] # stripping the first two columns (FILE_ID and AGE)
+            network_input = np.array(df.values)[:, 2:]  # stripping the first two columns (FILE_ID and AGE)
             return network_input
         else:
-            if show_flag == True:
+            if show_flag:
                 print(df[column_name])
             return np.array(df[column_name].values)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
+
 
 def main():
     parser = argparse.ArgumentParser(description="CSV Reader - A tool to read CSV files with Pandas.")
@@ -48,12 +50,13 @@ def main():
     args = parser.parse_args()
 
     if args.command == "show":
-        GetData(args.filename, show_flag = True)
+        GetData(args.filename, show_flag=True)
     elif args.command == "show_column":
         if not args.column:
             parser.error("The '--column' argument is required for 'show_column' command.")
         else:
-            GetData(args.filename, args.column, show_flag = True)
+            GetData(args.filename, args.column, show_flag=True)
+
 
 if __name__ == "__main__":
     main()

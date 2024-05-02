@@ -1,5 +1,6 @@
 import os
 
+
 def AbsolutePath(local_filename, data_folder = "data"):
     """
     AbsolutePath gets the absolute path of the file given the name of the folder containing the data
@@ -13,7 +14,7 @@ def AbsolutePath(local_filename, data_folder = "data"):
     Result:
     str: the function returns the absolute path of the selected file
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__)) # path of the code
+    script_dir = os.path.dirname(os.path.abspath(__file__))     # path of the code
     
     # Construct the absolute path to the data directory relative to the code directory
     data_dir = os.path.join(script_dir, "..", data_folder)
