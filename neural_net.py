@@ -1,24 +1,11 @@
-import csv
 import numpy as np
-import pandas as pd
+from csvreader import ShowCSV
 from loguru import logger
 from keras import Sequential
 from keras import layers 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def ShowCSV(csv_file, column_name=None):
-    try:
-        df = pd.read_csv(csv_file, delimiter=';')
-        if column_name is None:
-            print(df)
-            return df.values
-        else:
-            print(df[column_name])
-            return df[column_name].values
-    except FileNotFoundError:
-        logger.error("File not found.")
-        return None
 
 dataset = r"C:\Users\Jacopo\the_cartella\Magistrale\CMFEP\DATASETS\FEATURES\Brain_MRI_FS_ABIDE\FS_features_ABIDE_males_someGlobals.csv"
 
