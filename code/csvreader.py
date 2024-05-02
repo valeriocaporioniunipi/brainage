@@ -16,9 +16,9 @@ def GetData(csv_file, column_name = None, show_flag = False):
     the GetData function does not show the dataframe, unless specified by changing show_flag argument. 
 
     Arguments:
-    csv_file (string): Path to the CSV file
-    column_name (string): Optional, default = None. Name of the column to select
-    show_flag (bool): Optional, default = False. If True, the entire dataframe is shown.
+    -csv_file (str): path to the CSV file
+    -column_name (str): optional, default = None. Name of the column to select
+    -show_flag (bool): optional, default = False. If True, the entire dataframe is shown.
 
     Return:
     numpy.ndarray: The function returns a NumPy array

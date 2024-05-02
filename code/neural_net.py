@@ -7,8 +7,22 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def neural_network(filename, epochs = 50, summary_flag = False, hist_flag = False):
-    """Documentation"""
+def NeuralNetwork(filename, epochs = 50, summary_flag = False, hist_flag = False):
+    """
+    NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and 'test';
+    both inputs are normalized in order to have zero as mean and one as variance.
+
+    Arguments:
+    -filename (str): path to the CSV file
+    -epochs (int): optional, dafault = 50. Number of iterations on whole dataset
+    -summary_flag (bool): optional, default = False. Print the structure of neural network
+    -hist_flag (bool): optional, default = False. Plot a graph showing val_loss(labeled as valuation) vs
+    loss(labeled as training) during epochs
+
+    Return:
+    None. In the simpliest form just print the MAE (mean absolute error)
+
+    """
     X = GetData(filename)
     y = GetData(filename,"AGE_AT_SCAN")
 
@@ -64,7 +78,7 @@ def main():
 
     args = parser.parse_args()
 
-    neural_network(args.filename, int(args.epochs), args.summary, args.history)
+    NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
 
 
 if __name__ == "__main__":
