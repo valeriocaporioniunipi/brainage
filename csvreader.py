@@ -5,14 +5,26 @@ import pandas as pd
 from loguru import logger
 
 def ShowCSV(csv_file, column_name=None):
+    """
+    ShowCSV allows to show a CSV file as a Pandas dataframe on terminal.
+    It can also show a single column of the data.
+    When importing csvreader as a module, in both cases ShowCSV returns the data as a NumPy array.
+
+    Arguments:
+    csv_file (string): Path to the CSV file
+    column_name (string): Optional, default = None. Name of the column to select
+
+    Return:
+    numpy.ndarray: The function returns a NumPy array
+    """
     try:
         df = pd.read_csv(csv_file, delimiter=';')
         if column_name is None:
             print(df)
-            return df.values
+            return np.array(df.values)
         else:
             print(df[column_name])
-            return df[column_name].values
+            return np.array(df[column_name].values)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
