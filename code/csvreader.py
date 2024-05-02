@@ -31,7 +31,8 @@ def GetData(csv_file, column_name = None, show_flag = False):
             network_input = np.array(df.values)[:, 2:] # stripping the first two columns (FILE_ID and AGE)
             return network_input
         else:
-            print(df[column_name])
+            if show_flag == True:
+                print(df[column_name])
             return np.array(df[column_name].values)
     except FileNotFoundError:
         logger.error("File not found.")
@@ -52,7 +53,7 @@ def main():
         if not args.column:
             parser.error("The '--column' argument is required for 'show_column' command.")
         else:
-            GetData(args.filename, args.column)
+            GetData(args.filename, args.column, show_flag = True)
 
 if __name__ == "__main__":
     main()
