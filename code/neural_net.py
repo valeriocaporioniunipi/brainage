@@ -1,5 +1,5 @@
 import numpy as np
-from csvreader import ShowCSV
+from csvreader import GetData
 import argparse
 from loguru import logger
 from keras import Sequential
@@ -7,10 +7,10 @@ from keras import layers
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def neural_network(filename):
+def neural_network(filename, epochs = 50):
     """Documentation"""
-    X = np.column_stack((ShowCSV(filename,"TotalGrayVol"), ShowCSV(filename, "SEX")))
-    y = np.array(ShowCSV(filename,"AGE_AT_SCAN"))
+    X = GetData(filename)
+    y = np.array(GetData(filename,"AGE_AT_SCAN"))
 
     # Split data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -30,7 +30,7 @@ def neural_network(filename):
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae'])
 
     # Train the model
-    model.fit(X_train_scaled, y_train, epochs=50, batch_size=32, validation_split=0.1)
+    model.fit(X_train_scaled, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
 
     # Evaluate the model
     loss, mae = model.evaluate(X_test_scaled, y_test)
@@ -40,11 +40,12 @@ def main():
 
     parser = argparse.ArgumentParser(description='This program does stuff')
 
-    parser.add_argument("filename", help = "Name of the file that have to be analized")
+    parser.add_argument("filename", help = "Name of the file that has to be analized")
+    parser.add_argument("epochs", help = "Number of epochs of training")
 
     args = parser.parse_args()
 
-    neural_network(args.filename)
+    neural_network(args.filename, int(args.epochs))
 
 
 if __name__ == "__main__":
