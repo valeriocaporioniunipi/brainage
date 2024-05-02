@@ -3,7 +3,7 @@ from csvreader import GetData
 import argparse
 from loguru import logger
 from keras import Sequential
-from keras import layers 
+from keras import layers
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
@@ -19,10 +19,13 @@ def neural_network(filename, epochs = 50, summary_flag = False, hist_flag = Fals
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
+    print(np.shape(X_train_scaled))
 
     # Defining the model
     model = Sequential()
-    model.add(layers.Dense(64, input_dim=X_train_scaled.shape[1], activation='relu'))
+    model.add(layers.Input(shape = (np.shape(X_train_scaled[0]))))
+    # [0] is needed in order to pass the shape of a single feature array (the first, for instance)
+    model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
     model.add(layers.Dense(1, activation='linear'))  # Output layer
 
