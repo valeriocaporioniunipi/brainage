@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
+
 import numpy as np
->>>>>>> 2ecac1a (three typos)
 import argparse
-import numpy as np
 from keras import Sequential
 from keras import layers
 from sklearn.model_selection import train_test_split
@@ -11,15 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-<<<<<<< HEAD
-
 def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
-=======
-from abspath import AbsolutePath
-from csvreader import GetData
-
-def NeuralNetwork(filename, epochs = 50, summary_flag = False, hist_flag = False):
->>>>>>> 2ecac1a (three typos)
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
