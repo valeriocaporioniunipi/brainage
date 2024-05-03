@@ -72,7 +72,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='This program does stuff')
+    parser = argparse.ArgumentParser(description='Neural network predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--data_folder", help="Name of the folder containing data")
