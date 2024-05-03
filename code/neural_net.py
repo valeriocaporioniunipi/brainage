@@ -1,6 +1,8 @@
 
 import numpy as np
 import argparse
+from loguru import logger
+from matplotlib import pyplot as plt
 from keras import Sequential
 from keras import layers
 from sklearn.model_selection import train_test_split
@@ -8,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
+def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot_flag=False):
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
@@ -19,6 +21,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
     -summary_flag (bool): optional, default = False. Print the structure of neural network
     -hist_flag (bool): optional, default = False. Plot a graph showing
      val_loss(labeled as valuation) vs loss(labeled as training) during epochs
+    -plot_flag (bool): optional, default = False. Show the plot of actual vs predic
 
     Return:
     None. In the simpliest form just print the MAE (mean absolute error)
@@ -57,17 +60,34 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
 
     # Showing the history plot
     if hist_flag:
-        from matplotlib import pyplot as plt
         plt.plot(history.history["val_loss"], label="validation")
         plt.plot(history.history["loss"], label="training")
         plt.xlabel("epoch")
         plt.ylabel("loss")
+        plt.title('History')
         plt.legend()
         plt.show()
 
+    # Predicting on the test set
+    y_pred = model.predict(x_test_scaled)
+
     # Evaluating the model
     _, mae = model.evaluate(x_test_scaled, y_test)
+
+    if plot_flag == True:
+        # plot the actual vs. predicted values
+        plt.figure(figsize=(8, 6))
+        plt.scatter(y_test, y_pred, color='blue')
+        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title('Actual vs. Predicted Brain age')
+        plt.grid(False)
+        plt.show()
+
+
     print("Mean Absolute Error on Test Set:", mae)
+
 
 
 def main():
@@ -78,6 +98,8 @@ def main():
     parser.add_argument("epochs", help="Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
+    parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
+    
 
     args = parser.parse_args()
 
