@@ -1,46 +1,45 @@
-import numpy as np
-from abspath import AbsolutePath
-from csvreader import GetData
 import argparse
-from loguru import logger
+import numpy as np
 from keras import Sequential
 from keras import layers
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from abspath import AbsolutePath
+from csvreader import GetData
 
 
 def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
     """
-    NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and 'test';
-    both inputs are normalized in order to have zero as mean and one as variance.
+    NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
+    'test'; both inputs are normalized in order to have zero as mean and one as variance.
 
     Arguments:
     -filename (str): path to the CSV file
     -epochs (int): optional, dafault = 50. Number of iterations on whole dataset
     -summary_flag (bool): optional, default = False. Print the structure of neural network
-    -hist_flag (bool): optional, default = False. Plot a graph showing val_loss(labeled as valuation) vs
-    loss(labeled as training) during epochs
+    -hist_flag (bool): optional, default = False. Plot a graph showing
+     val_loss(labeled as valuation) vs loss(labeled as training) during epochs
 
     Return:
     None. In the simpliest form just print the MAE (mean absolute error)
 
     """
 
-    X = GetData(filename)
+    x = GetData(filename)
     y = GetData(filename, "AGE_AT_SCAN")
 
     # Splitting data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     # Normalizing features
     scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    print(np.shape(X_train_scaled))
-
+    x_train_scaled = scaler.fit_transform(x_train)
+    x_test_scaled = scaler.transform(x_test)
+    print(np.shape(x_train_scaled))
+ 
     # Defining the model
     model = Sequential()
-    model.add(layers.Input(shape=(np.shape(X_train_scaled[0]))))
+    model.add(layers.Input(shape = np.shape(x_train_scaled[0])))
     # [0] is needed in order to pass the shape of a single feature array (the first, for instance)
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
@@ -54,7 +53,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
         model.summary()
 
     # Training the model
-    history = model.fit(X_train_scaled, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
+    history = model.fit(x_train_scaled, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
 
     # Showing the history plot
     if hist_flag:
@@ -67,7 +66,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False):
         plt.show()
 
     # Evaluating the model
-    loss, mae = model.evaluate(X_test_scaled, y_test)
+    _, mae = model.evaluate(x_test_scaled, y_test)
     print("Mean Absolute Error on Test Set:", mae)
 
 
