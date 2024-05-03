@@ -74,23 +74,23 @@ def main():
     parser = argparse.ArgumentParser(description='Neural network predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
-    parser.add_argument("--data_folder", help="Name of the folder containing data")
+    parser.add_argument("--location", default='data', help="Location of the file, i.e. folder containing it")
     parser.add_argument("epochs", help="Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
-    parser.add_argument("--data", action="store_true", help="Allows to write the local name of the file")
 
     args = parser.parse_args()
 
-    if args.data:
-        if not args.data_folder:
-            parser.error("The data folder is not specified.")
+    try:
+        if not args.location:
+            NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
         else:
-            absolute_filename = AbsolutePath(args.filename, args.data_folder)
-            NeuralNetwork(absolute_filename, int(args.epochs), args.summary, args.history)
-    else:
-        NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
-
+            args.filename = AbsolutePath(args.filename, args.location)
+            NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
+    except FileNotFoundError:
+        logger.error("File not found.")
+        return None
+        
 
 if __name__ == "__main__":
     main()
