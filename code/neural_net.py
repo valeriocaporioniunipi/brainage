@@ -96,7 +96,7 @@ def main():
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("epochs", help="Number of epochs of training")
+    parser.add_argument("epochs", type = int, help="Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
     parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
@@ -106,10 +106,10 @@ def main():
 
     try:
         if not args.location:
-            NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
+            NeuralNetwork(args.filename, args.epochs, args.summary, args.history)
         else:
             args.filename = AbsolutePath(args.filename, args.location)
-            NeuralNetwork(args.filename, int(args.epochs), args.summary, args.history)
+            NeuralNetwork(args.filename, args.epochs, args.summary, args.history)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
