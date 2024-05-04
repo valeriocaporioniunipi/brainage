@@ -72,7 +72,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot
     y_pred = model.predict(x_test_scaled)
 
     # Evaluating the model
-    _, mae = model.evaluate(x_test_scaled, y_test)
+    mse, mae = model.evaluate(x_test_scaled, y_test)
 
     if plot_flag == True:
         # plot the actual vs. predicted values
@@ -87,6 +87,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot
 
 
     print("Mean Absolute Error on Test Set:", mae)
+    print("Mean Squared Error on Test Set:", mse)
 
 
 
@@ -95,7 +96,7 @@ def main():
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--epochs", default = 50, help="Number of epochs of training", type = int)
+    parser.add_argument("epochs", type = int, help="Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
     parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
