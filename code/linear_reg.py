@@ -65,7 +65,7 @@ def main():
     parser = argparse.ArgumentParser(description='Linear regression predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
-    parser.add_argument("--location", default='data', help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
     parser.add_argument("--plot", action='store_true', help="Show the plot of actual vs predicted brain age")
 
 
