@@ -72,7 +72,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot
     y_pred = model.predict(x_test_scaled)
 
     # Evaluating the model
-    _, mae = model.evaluate(x_test_scaled, y_test)
+    mse, mae = model.evaluate(x_test_scaled, y_test)
 
     if plot_flag == True:
         # plot the actual vs. predicted values
@@ -87,6 +87,7 @@ def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot
 
 
     print("Mean Absolute Error on Test Set:", mae)
+    print("Mean Squared Error on Test Set:", mse)
 
 
 
