@@ -24,20 +24,16 @@ def GetData(csv_file, column_name=None, show_flag=False):
     Return:
     numpy.ndarray: The function returns a NumPy array
     """
-    try:
-        df = pd.read_csv(csv_file, delimiter=';')
-        if column_name is None:
-            if show_flag:
-                print(df)
-            network_input = np.array(df.values)[:, 2:]  # stripping the first two columns (FILE_ID and AGE)
-            return network_input
-        else:
-            if show_flag:
-                print(df[column_name])
-            return np.array(df[column_name].values)
-    except FileNotFoundError:
-        logger.error("File not found.")
-        return None
+    df = pd.read_csv(csv_file, delimiter=';')
+    if column_name is None:
+        if show_flag:
+            print(df)
+        network_input = np.array(df.values)[:, 2:]  # stripping the first two columns (FILE_ID and AGE)
+        return network_input
+    else:
+        if show_flag:
+            print(df[column_name])
+        return np.array(df[column_name].values)
 
 
 def main():
@@ -49,14 +45,16 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "show":
-        GetData(args.filename, show_flag=True)
-    elif args.command == "show_column":
-        if not args.column:
-            parser.error("The '--column' argument is required for 'show_column' command.")
-        else:
-            GetData(args.filename, args.column, show_flag=True)
-
+    try:
+        if args.command == "show":
+            GetData(args.filename, show_flag=True)
+        elif args.command == "show_column":
+            if not args.column:
+                parser.error("The '--column' argument is required for 'show_column' command.")
+            else:
+                GetData(args.filename, args.column, show_flag=True)
+    except FileNotFoundError as e:
+        logger.error("File not found", e)
 
 if __name__ == "__main__":
     main()
