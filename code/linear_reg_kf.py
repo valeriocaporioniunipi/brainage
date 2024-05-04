@@ -39,8 +39,11 @@ def LinRegression(filename, n_splits=5, plot_flag=False):
     mse_scores = []
     r2_scores = []
 
+    # Initialize figure for plotting
+    plt.figure(figsize=(10, 8))
+
     # Perform k-fold cross-validation
-    for train_index, test_index in kf.split(x_scaled):
+    for i, (train_index, test_index) in enumerate(kf.split(x_scaled), 1):
         # Split data into training and testing sets
         x_train, x_test = x_scaled[train_index], x_scaled[test_index]
         y_train, y_test = y[train_index], y[test_index]
@@ -61,21 +64,28 @@ def LinRegression(filename, n_splits=5, plot_flag=False):
         mse_scores.append(mse)
         r2_scores.append(r2)
 
+        # Plot actual vs. predicted values for current fold
+        plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+
+    # Plot the ideal line (y=x)
+    plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+
+    # Set plot labels and title
+    plt.xlabel('Actual')
+    plt.ylabel('Predicted')
+    plt.title('Actual vs. Predicted Brain Age')
+
+    # Add legend and grid
+    plt.legend()
+    plt.grid(True)
+
+    # Show the plot
+    plt.show()
+
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
     print("Mean Squared Error:", np.mean(mse_scores))
     print("R-squared:", np.mean(r2_scores))
-
-    if plot_flag:
-        # Plot the actual vs. predicted values for the last fold
-        plt.figure(figsize=(8, 6))
-        plt.scatter(y_test, y_pred, color='blue')
-        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2)
-        plt.xlabel('Actual')
-        plt.ylabel('Predicted')
-        plt.title('Actual vs. Predicted Brain age')
-        plt.grid(False)
-        plt.show()
 
 def main():
     parser = argparse.ArgumentParser(description='Linear regression with k-fold cross-validation predicting the age of patients from magnetic resonance imaging')
