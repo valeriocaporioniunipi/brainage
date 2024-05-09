@@ -108,7 +108,7 @@ def main():
     try:
         args.filename = AbsolutePath(args.filename, args.location) if args.location else args.filename
         logger.info("Opening file:", args.filename)
-        NeuralNetwork(args.filename, args.epochs, args.summary, args.history)
+        NeuralNetwork(args.filename, args.epochs, args.summary, args.history, args.plot)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
