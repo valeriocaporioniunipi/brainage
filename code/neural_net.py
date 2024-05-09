@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot_flag=False):
+def NeuralNetwork(filename, epochs, summary_flag=False, hist_flag=False, plot_flag=False):
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
