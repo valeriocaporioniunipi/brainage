@@ -1,5 +1,6 @@
 
 import numpy as np
+import os
 import argparse
 from loguru import logger
 from matplotlib import pyplot as plt
@@ -105,15 +106,12 @@ def main():
     args = parser.parse_args()
 
     try:
-        if not args.location:
-            NeuralNetwork(args.filename, args.epochs, args.summary, args.history)
-        else:
-            args.filename = AbsolutePath(args.filename, args.location)
-            NeuralNetwork(args.filename, args.epochs, args.summary, args.history)
+        args.filename = AbsolutePath(args.filename, args.location) if args.location else args.filename
+        logger.info("Opening file:", args.filename)
+        NeuralNetwork(args.filename, args.epochs, args.summary, args.history, args.plot)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
-        
 
 if __name__ == "__main__":
     main()

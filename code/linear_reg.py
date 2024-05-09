@@ -75,17 +75,17 @@ def LinRegression(filename, n_splits=5, plot_flag=False):
     plt.ylabel('Predicted')
     plt.title('Actual vs. Predicted Brain Age')
 
-    # Add legend and grid
+    # Add legend and grid to the plot
     plt.legend()
     plt.grid(True)
-
-    # Show the plot
-    plt.show()
 
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
     print("Mean Squared Error:", np.mean(mse_scores))
     print("R-squared:", np.mean(r2_scores))
+
+    # Show the plot
+    plt.show()
 
 def main():
     parser = argparse.ArgumentParser(description='Linear regression with k-fold cross-validation predicting the age of patients from magnetic resonance imaging')
