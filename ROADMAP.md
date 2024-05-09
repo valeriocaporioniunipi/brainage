@@ -5,6 +5,6 @@ Roadmap for the project
 Example paper: Cole et al., Predicting brain age with deep learning from raw imaging data results in a reliable and heritable biomarker, NeuroImage 163 (2017) 115–124, https://www.ncbi.nlm.nih.gov/pubmed/28765056     
 
 * Project Milestones:
-  [] Neural network code (python) with global features as input
-  [] Linear regression code (python) with global features as input
-  [] Finding different regression models
+  [ ] Neural network code (python) with global features as input
+  [ ] Linear regression code (python) with global features as input
+  [ ] Finding different regression models
