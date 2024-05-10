@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def NeuralNetwork(filename, epochs=50, summary_flag=False, hist_flag=False, plot_flag=False):
+def NeuralNetwork(filename, epochs, summary_flag=False, hist_flag=False, plot_flag=False):
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
@@ -97,7 +97,7 @@ def main():
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("epochs", type = int, help="Number of epochs of training")
+    parser.add_argument("--epochs", type = int, default = 50, help="Number of epochs of training")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
     parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
