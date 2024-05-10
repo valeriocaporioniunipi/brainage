@@ -11,14 +11,15 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def LinRegression(filename, ex_cols=0, n_splits=5, plot_flag=False):
+def LinRegression(filename, n_splits, ex_cols=0, plot_flag=False):
+
     """
     LinRegression performs linear regression with k-fold cross-validation on the given dataset.
 
     Arguments:
-    - filename (str): path to the CSV file containing the dataset
-    -ex_cols (int): optional, default = 0. Number of columns excluded from dataset 
-    - n_splits (int): optional, default = 5. Number of folds for cross-validation
+    - filename (str): path to the CSV file containing the dataset 
+    - n_splits (int): number of folds for cross-validation
+    - ex_cols (int): optional, default = 0. Number of columns excluded from dataset
     - plot_flag (bool): optional, default = False. Whether to plot the actual vs. predicted values
 
     Returns:
