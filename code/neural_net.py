@@ -28,8 +28,9 @@ def NeuralNetwork(filename, epochs, summary_flag=False, hist_flag=False, plot_fl
     None. In the simpliest form just print the MAE (mean absolute error)
 
     """
-
-    x = GetData(filename)
+    # Load data...
+    #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
+    x = GetData(filename)[:, 3:]
     y = GetData(filename, "AGE_AT_SCAN")
 
     # Splitting data into training and testing sets

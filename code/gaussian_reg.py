@@ -23,8 +23,9 @@ def GaussRegression(filename, n_splits, plot_flag=False):
     Returns:
     - None. Prints evaluation metrics of the gaussian regression model.
     """
-    # Load data
-    x = GetData(filename)
+    # Load data...
+    #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
+    x = GetData(filename)[:, 3:] 
     y = GetData(filename, "AGE_AT_SCAN")
 
     # Standardize features

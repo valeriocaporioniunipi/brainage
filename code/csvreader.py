@@ -28,7 +28,7 @@ def GetData(csv_file, column_name=None, show_flag=False):
     if column_name is None:
         if show_flag:
             print(df)
-        network_input = np.array(df.values)[:, 2:]  # stripping the first two columns (FILE_ID and AGE)
+        network_input = np.array(df.values)
         return network_input
     else:
         if show_flag:
