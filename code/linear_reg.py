@@ -11,12 +11,13 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def LinRegression(filename, n_splits=5, plot_flag=False):
+def LinRegression(filename, ex_cols=0, n_splits=5, plot_flag=False):
     """
     LinRegression performs linear regression with k-fold cross-validation on the given dataset.
 
     Arguments:
     - filename (str): path to the CSV file containing the dataset
+    -ex_cols (int): optional, default = 0. Number of columns excluded from dataset 
     - n_splits (int): optional, default = 5. Number of folds for cross-validation
     - plot_flag (bool): optional, default = False. Whether to plot the actual vs. predicted values
 
@@ -25,7 +26,7 @@ def LinRegression(filename, n_splits=5, plot_flag=False):
     """
     # Load data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
-    x = GetData(filename)[:, 3:]
+    x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")
 
     # Standardize features
@@ -68,31 +69,34 @@ def LinRegression(filename, n_splits=5, plot_flag=False):
         # Plot actual vs. predicted values for current fold
         plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
-    # Plot the ideal line (y=x)
-    plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
-
-    # Set plot labels and title
-    plt.xlabel('Actual')
-    plt.ylabel('Predicted')
-    plt.title('Actual vs. Predicted Brain Age')
-
-    # Add legend and grid to the plot
-    plt.legend()
-    plt.grid(True)
-
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
     print("Mean Squared Error:", np.mean(mse_scores))
     print("R-squared:", np.mean(r2_scores))
 
-    # Show the plot
-    plt.show()
+    if plot_flag:
+
+        # Plot the ideal line (y=x)
+        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+
+        # Set plot labels and title
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title('Actual vs. Predicted Brain Age')
+
+        # Add legend and grid to the plot
+        plt.legend()
+        plt.grid(True)
+
+        # Show the plot
+        plt.show()
 
 def main():
     parser = argparse.ArgumentParser(description='Linear regression with k-fold cross-validation predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename", help="Name of the file that has to be analyzed")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--ex_cols", type = int, default = 3, help="Number of columns excluded when importing data")
     parser.add_argument("--n_splits", type=int, default=5, help="Number of folds for k-folding cross-validation")
     parser.add_argument("--plot", action='store_true', help="Show the plot of actual vs predicted brain age")
 
@@ -100,10 +104,10 @@ def main():
 
     try:
         if not args.location:
-            LinRegression(args.filename, n_splits=args.n_splits, plot_flag=args.plot)
+            LinRegression(args.filename, args.ex_cols, n_splits=args.n_splits, plot_flag=args.plot)
         else:
             args.filename = AbsolutePath(args.filename, args.location)
-            LinRegression(args.filename, n_splits=args.n_splits, plot_flag=args.plot)
+            LinRegression(args.filename, args.ex_cols, n_splits=args.n_splits, plot_flag=args.plot)
     except FileNotFoundError:
         logger.error("File not found.")
         return None

@@ -11,14 +11,15 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def NeuralNetwork(filename, epochs, summary_flag=False, hist_flag=False, plot_flag=False):
+def NeuralNetwork(filename, epochs, ex_cols = 0, summary_flag=False, hist_flag=False, plot_flag=False):
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
 
     Arguments:
     -filename (str): path to the CSV file
-    -epochs (int): optional, dafault = 50. Number of iterations on whole dataset
+    -epochs (int): Number of epochs during neural network training
+    -ex_cols (int): optional, default = 0. Number of columns excluded from dataset
     -summary_flag (bool): optional, default = False. Print the structure of neural network
     -hist_flag (bool): optional, default = False. Plot a graph showing
      val_loss(labeled as valuation) vs loss(labeled as training) during epochs
@@ -30,7 +31,7 @@ def NeuralNetwork(filename, epochs, summary_flag=False, hist_flag=False, plot_fl
     """
     # Load data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
-    x = GetData(filename)[:, 3:]
+    x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")
 
     # Splitting data into training and testing sets
@@ -99,6 +100,7 @@ def main():
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
     parser.add_argument("--epochs", type = int, default = 50, help="Number of epochs of training")
+    parser.add_argument("--ex_cols", type = int, default = 3, help="Number of columns excluded when importing data")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
     parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
@@ -109,7 +111,7 @@ def main():
     try:
         args.filename = AbsolutePath(args.filename, args.location) if args.location else args.filename
         logger.info("Opening file:", args.filename)
-        NeuralNetwork(args.filename, args.epochs, args.summary, args.history, args.plot)
+        NeuralNetwork(args.filename, args.epochs, args.ex_cols, args.summary, args.history, args.plot)
     except FileNotFoundError:
         logger.error("File not found.")
         return None
