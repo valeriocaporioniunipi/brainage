@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def LinRegression(filename, n_splits=5, plot_flag=False):
+def LinRegression(filename, n_splits, plot_flag=False):
     """
     LinRegression performs linear regression with k-fold cross-validation on the given dataset.
 
