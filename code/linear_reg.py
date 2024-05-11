@@ -103,15 +103,18 @@ def main():
 
     args = parser.parse_args()
 
-    try:
-        if not args.location:
-            LinRegression(args.filename, args.ex_cols, n_splits=args.n_splits, plot_flag=args.plot)
-        else:
-            args.filename = AbsolutePath(args.filename, args.location)
-            LinRegression(args.filename, args.ex_cols, n_splits=args.n_splits, plot_flag=args.plot)
-    except FileNotFoundError:
-        logger.error("File not found.")
-        return None
+    if args.n_splits > 4:
+        try:
+            if not args.location:
+                LinRegression(args.filename, n_splits=args.n_splits, ex_cols = args.ex_cols, plot_flag=args.plot)
+            else:
+                args.filename = AbsolutePath(args.filename, args.location)
+                LinRegression(args.filename, n_splits=args.n_splits, ex_cols = args.ex_cols, plot_flag=args.plot)
+        except FileNotFoundError:
+            logger.error("File not found.")
+            return None
+    else: 
+        logger.error("Invalid number of folds: at least 5 folds required")
 
 if __name__ == "__main__":
     main()
