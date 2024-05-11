@@ -33,7 +33,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     Return:
     None. In the simpliest form just print the MAE (mean absolute error), the MSE (mean squared error) and the R-squared
     """
-    # Load data...
+    # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
     x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")
@@ -84,10 +84,10 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
         # Training the model
         logger.info(f"Training the model with dataset {i}/{n_splits}")
         history = model.fit(x_train, y_train, epochs=epochs, batch_size=32)
-        
+                
         # Showing the history plot
         if hist_flag:
-            plt.plot(history.history["val_loss"], label="validation")
+            plt.plot(history.history['val_loss'], label="validation")
             plt.plot(history.history["loss"], label="training")
             plt.xlabel("epoch")
             plt.ylabel("loss")
@@ -139,9 +139,9 @@ def main():
 
     parser.add_argument("filename", help="Name of the file that has to be analized")
     parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--epochs", type = int, default = 50, help="Number of epochs of training")
+    parser.add_argument("--epochs", type = int, default = 50, help="Number of epochs of training (default 50)")
     parser.add_argument("--folds", type = int, default = 5, help="Number of folds in the k-folding (>4, default 5)")
-    parser.add_argument("--ex_cols", type = int, default = 3, help="Number of columns excluded when importing data")
+    parser.add_argument("--ex_cols", type = int, default = 3, help="Number of columns excluded when importing (default 3)")
     parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true", help="Show the history of the training")
     parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
