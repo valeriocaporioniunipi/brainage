@@ -92,6 +92,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
         # Predict on the test set
         y_pred = model.predict(x_test)
 
+        #Appending vectors with history data
         if hist_flag:
             validation_vector = np.append(validation_vector, history.history['val_loss'])
             training_vector = np.append(training_vector, history.history['loss'])         
