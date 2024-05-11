@@ -75,6 +75,10 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     if plot_flag:
         plt.figure(figsize=(10, 8))
 
+    # Inizializing two empty array
+    validation_vector = np.array([])
+    training_vector = np.array([])
+
     # Perform k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(x_scaled), 1):
         # Split data into training and testing sets
@@ -83,20 +87,14 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
         # Training the model
         logger.info(f"Training the model with dataset {i}/{n_splits}")
-        history = model.fit(x_train, y_train, epochs=epochs, batch_size=32)
-                
-        # Showing the history plot
-        if hist_flag:
-            plt.plot(history.history['val_loss'], label="validation")
-            plt.plot(history.history["loss"], label="training")
-            plt.xlabel("epoch")
-            plt.ylabel("loss")
-            plt.title(f'History of split {i}')
-            plt.legend()
-            plt.show()
+        history = model.fit(x_train, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
 
         # Predict on the test set
         y_pred = model.predict(x_test)
+
+        if hist_flag:
+            validation_vector = np.append(validation_vector, history.history['val_loss'])
+            training_vector = np.append(training_vector, history.history['loss'])         
 
         # Evaluate the model
         mae = mean_absolute_error(y_test, y_pred)
@@ -110,6 +108,15 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
         # Plot actual vs. predicted values for current fold
         if plot_flag:
             plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+
+    if hist_flag:
+            plt.plot(validation_vector, label="validation")
+            plt.plot(training_vector, label="training")
+            plt.xlabel("epoch")
+            plt.ylabel("loss")
+            plt.title(f'History of split {i}')
+            plt.legend()
+            plt.show()
 
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
