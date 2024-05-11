@@ -33,7 +33,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     Return:
     None. In the simpliest form just print the MAE (mean absolute error), the MSE (mean squared error) and the R-squared
     """
-    # Load data...
+    # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
     x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")

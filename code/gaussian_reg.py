@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def GaussRegression(filename, n_splits, ex_cols=3,  plot_flag=False):
+def GaussRegression(filename, n_splits, ex_cols=0,  plot_flag=False):
     """
     GaussRegression performs a Gaussian regression with k-fold cross-validation on the given dataset.
 
@@ -24,7 +24,7 @@ def GaussRegression(filename, n_splits, ex_cols=3,  plot_flag=False):
     Returns:
     - None. Prints evaluation metrics of the gaussian regression model.
     """
-    # Load data...
+    # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
     x = GetData(filename)[:, ex_cols:] 
     y = GetData(filename, "AGE_AT_SCAN")

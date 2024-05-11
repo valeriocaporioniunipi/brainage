@@ -25,7 +25,7 @@ def LinRegression(filename, n_splits, ex_cols=0, plot_flag=False):
     Returns:
     - None. Prints evaluation metrics of the linear regression model.
     """
-    # Load data...
+    # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
     x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")
