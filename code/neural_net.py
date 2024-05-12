@@ -71,9 +71,12 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     else: 
         logger.info("Skipping model summary.")
 
-    # Initialize figure for plotting
+    # Initialize figures for plotting
     if plot_flag:
-        plt.figure(figsize=(10, 8))
+        fig1, ax1 = plt.subplots(figsize=(10, 8))
+
+    if hist_flag:
+        fig2, ax2 = plt.subplots(figsize=(10,8))
 
     # Inizializing two empty array
     validation_vector = np.array([])
@@ -92,6 +95,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
         # Predict on the test set
         y_pred = model.predict(x_test)
 
+        #Appending vectors with history data
         if hist_flag:
             validation_vector = np.append(validation_vector, history.history['val_loss'])
             training_vector = np.append(training_vector, history.history['loss'])         
@@ -107,16 +111,15 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
         # Plot actual vs. predicted values for current fold
         if plot_flag:
-            plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+            ax1.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
     if hist_flag:
-            plt.plot(validation_vector, label="validation")
-            plt.plot(training_vector, label="training")
-            plt.xlabel("epoch")
-            plt.ylabel("loss")
-            plt.title(f'History of split {i}')
-            plt.legend()
-            plt.show()
+            ax2.plot(validation_vector, label="validation")
+            ax2.plot(training_vector, label="training")
+            ax2.set_xlabel("epoch")
+            ax2.set_ylabel("loss")
+            ax2.set_title(f'History of splits')
+            ax2.legend()
 
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
@@ -125,21 +128,21 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
     if plot_flag:
         # Plot the ideal line (y=x)
-        plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+        ax1.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
 
         # Set plot labels and title
-        plt.xlabel('Actual')
-        plt.ylabel('Predicted')
-        plt.title('Actual vs. Predicted Brain Age')
+        ax1.set_xlabel('Actual')
+        ax1.set_ylabel('Predicted')
+        ax1.set_title('Actual vs. Predicted Brain Age')
 
         # Add legend and grid to the plot
-        plt.legend()
-        plt.grid(True)
+        fig1.legend()
+        ax1.grid(True)
 
-        # Show the plot
-        plt.show()
     else: 
         logger.info("Skipping the plot of Actual vs Predicted Brain Age.")
+    
+    plt.show()
 
 def main():
     parser = argparse.ArgumentParser(description='Neural network predicting the age of patients from magnetic resonance imaging')
