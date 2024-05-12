@@ -1,12 +1,12 @@
-import numpy as np
 import argparse
+import numpy as np
 from loguru import logger
 from matplotlib import pyplot as plt
 
 from keras import Sequential
 from keras import layers
 
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
@@ -14,7 +14,8 @@ from sklearn.preprocessing import StandardScaler
 from abspath import AbsolutePath
 from csvreader import GetData
 
-def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, hist_flag=False, plot_flag=False):
+def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0,
+                   summary_flag=False, hist_flag=False, plot_flag=False):
 
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
@@ -31,7 +32,14 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     -plot_flag (bool): optional, default = False. Show the plot of actual vs predic
 
     Return:
-    None. In the simpliest form just print the MAE (mean absolute error), the MSE (mean squared error) and the R-squared
+    None.
+    It prints 
+    - MAE (mean absolute error)
+    - MSE (mean squared error)
+    - R-squared
+    Optionally shows
+    - Actual vs Predicted brain age scatter plot
+    - Training history plot
     """
     # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
@@ -42,7 +50,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     scaler = StandardScaler()
     # since k-folding is implemented, standardization occurs after data splitting
     # in order to avoid information leakage (information from the validation or test set
-    # would inadvertently influence the preprocessing steps). 
+    # would inadvertently influence the preprocessing steps).
 
     # Initialize k-fold cross-validation
     kf = KFold(n_splits=n_splits)
@@ -56,8 +64,8 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     # Defining the model
     model = Sequential()
     model.add(layers.Input(shape = np.shape(x[0])))
-    # Defining the model outside is better from a computational-resources point of view. The shape of
-    # x[0] is the same of x_train[0], which will be defined later
+    # Defining the model outside is better from a computational-resources point of view.
+    # The shape of x[0] is the same of x_train[0], which will be defined later, and
     # [0] is needed in order to pass the shape of a single feature array (the first, for instance)
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(32, activation='relu'))
@@ -70,19 +78,15 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     # Printing the summary, if specified
     if summary_flag:
         model.summary()
-    else: 
+    else:
         logger.info("Skipping model summary.")
 
     # Initialize figures for plotting
-    if plot_flag:
-        fig1, ax1 = plt.subplots(figsize=(10, 8))
-
     if hist_flag:
-        fig2, ax2 = plt.subplots(figsize=(10,8))
+        fig1, ax1 = plt.subplots(figsize=(10,8))
 
-    # Inizializing two empty array
-    validation_vector = np.array([])
-    training_vector = np.array([])
+    if plot_flag:
+        fig2, ax2 = plt.subplots(figsize=(10, 8))
 
     # Perform k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(x), 1):
@@ -103,8 +107,10 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
         #Appending vectors with history data
         if hist_flag:
-            validation_vector = np.append(validation_vector, history.history['val_loss'])
-            training_vector = np.append(training_vector, history.history['loss'])         
+            validation_loss = history.history['val_loss']
+            training_loss = history.history['loss']
+            ax1.plot(training_loss, label=f"Tr. {i}", color = "r", alpha = 1/i)
+            ax1.plot(validation_loss, label=f"Val. {i}", color = "k", alpha = 1/i)
 
         # Evaluate the model
         mae = mean_absolute_error(y_test, y_pred)
@@ -117,15 +123,17 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
         # Plot actual vs. predicted values for current fold
         if plot_flag:
-            ax1.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+            ax2.scatter(y_test, y_pred, alpha=0.5,
+                         label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
     if hist_flag:
-            ax2.plot(validation_vector, label="validation")
-            ax2.plot(training_vector, label="training")
-            ax2.set_xlabel("epoch")
-            ax2.set_ylabel("loss")
-            ax2.set_title(f'History of splits')
-            ax2.legend()
+        ax1.set_xlabel("epoch")
+        ax1.set_ylabel("loss")
+        ax1.set_title('History of training')
+        fig1.legend()
+
+    else:
+        logger.info("Skipping the plot of training history.")
 
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
@@ -134,45 +142,58 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
 
     if plot_flag:
         # Plot the ideal line (y=x)
-        ax1.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+        ax2.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
 
         # Set plot labels and title
-        ax1.set_xlabel('Actual')
-        ax1.set_ylabel('Predicted')
-        ax1.set_title('Actual vs. Predicted Brain Age')
+        ax2.set_xlabel('Actual')
+        ax2.set_ylabel('Predicted')
+        ax2.set_title('Actual vs. Predicted Brain Age')
 
         # Add legend and grid to the plot
-        fig1.legend()
-        ax1.grid(True)
+        fig2.legend()
+        ax2.grid(True)
 
-    else: 
-        logger.info("Skipping the plot of Actual vs Predicted Brain Age.")
-    
+    else:
+        logger.info("Skipping the plot of actual vs predicted brain age.")
+
     plt.show()
 
 def main():
-    parser = argparse.ArgumentParser(description='Neural network predicting the age of patients from magnetic resonance imaging')
+    """
+    Parsing from terminal
+    """
+    parser = argparse.ArgumentParser(description=
+        'Neural network predicting the age of patients from magnetic resonance imaging')
 
-    parser.add_argument("filename", help="Name of the file that has to be analized")
-    parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--epochs", type = int, default = 50, help="Number of epochs of training (default 50)")
-    parser.add_argument("--folds", type = int, default = 5, help="Number of folds in the k-folding (>4, default 5)")
-    parser.add_argument("--ex_cols", type = int, default = 3, help="Number of columns excluded when importing (default 3)")
-    parser.add_argument("--summary", action="store_true", help="Show the summary of the neural network")
-    parser.add_argument("--history", action="store_true", help="Show the history of the training")
-    parser.add_argument("--plot", action="store_true", help="Show the plot of actual vs predicted brain age")
-    
+    parser.add_argument("filename",
+                         help="Name of the file that has to be analized")
+    parser.add_argument("--location",
+                         help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--epochs", type = int, default = 50,
+                         help="Number of epochs of training (default 50)")
+    parser.add_argument("--folds", type = int, default = 5,
+                         help="Number of folds in the k-folding (>4, default 5)")
+    parser.add_argument("--ex_cols", type = int, default = 3,
+                         help="Number of columns excluded when importing (default 3)")
+    parser.add_argument("--summary", action="store_true",
+                         help="Show the summary of the neural network")
+    parser.add_argument("--history", action="store_true",
+                         help="Show the history of the training")
+    parser.add_argument("--plot", action="store_true",
+                         help="Show the plot of actual vs predicted brain age")
+
     args = parser.parse_args()
 
     if args.folds > 4:
         try:
-            args.filename = AbsolutePath(args.filename, args.location) if args.location else args.filename
+            args.filename = AbsolutePath(args.filename,
+                                          args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
-            NeuralNetwork(args.filename, args.epochs, args.folds, args.ex_cols, args.summary, args.history, args.plot)
+            NeuralNetwork(args.filename, args.epochs, args.folds,
+                           args.ex_cols, args.summary, args.history, args.plot)
         except FileNotFoundError:
             logger.error("File not found.")
-            return None
-    else: 
+    else:
         logger.error("Invalid number of folds: at least 5 folds required.")
 
 
