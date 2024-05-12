@@ -38,9 +38,11 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     x = GetData(filename)[:, ex_cols:]
     y = GetData(filename, "AGE_AT_SCAN")
 
-    # Standardize features
+    # Standardization of features
     scaler = StandardScaler()
-    x_scaled = scaler.fit_transform(x)
+    # since k-folding is implemented, standardization occurs after data splitting
+    # in order to avoid information leakage (information from the validation or test set
+    # would inadvertently influence the preprocessing steps). 
 
     # Initialize k-fold cross-validation
     kf = KFold(n_splits=n_splits)
@@ -83,10 +85,14 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0, summary_flag=False, h
     training_vector = np.array([])
 
     # Perform k-fold cross-validation
-    for i, (train_index, test_index) in enumerate(kf.split(x_scaled), 1):
+    for i, (train_index, test_index) in enumerate(kf.split(x), 1):
         # Split data into training and testing sets
-        x_train, x_test = x_scaled[train_index], x_scaled[test_index]
+        x_train, x_test = x[train_index], x[test_index]
         y_train, y_test = y[train_index], y[test_index]
+
+        # Standandization (after the split)
+        x_train = scaler.fit_transform(x_train)
+        x_test = scaler.transform(x_test)
 
         # Training the model
         logger.info(f"Training the model with dataset {i}/{n_splits}")
