@@ -73,6 +73,7 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0,
 
     # Compiling the model
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae'])
+    initial_weights = model.get_weights()
     logger.info("Model successfully compiled.")
 
     # Printing the summary, if specified
@@ -97,6 +98,9 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0,
         # Standandization (after the split)
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
+
+        # Resetting model's weights
+        model.set_weights(initial_weights)
 
         # Training the model
         logger.info(f"Training the model with dataset {i}/{n_splits}")
