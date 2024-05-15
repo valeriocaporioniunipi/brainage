@@ -92,7 +92,7 @@ def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
         # Show the plot
         plt.show()
 
-def main():
+def gaussian_reg_parsing():
     """
     Parsing from terminal
     """
@@ -129,5 +129,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    gaussian_reg_parsing()
 

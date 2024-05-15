@@ -205,7 +205,7 @@ def training(features, targets, model, epochs, **kwargs):
     plt.show()
     return scores
 
-def main():
+def neural_net_parsing():
     """
     Parsing from terminal
     """
@@ -293,4 +293,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    neural_net_parsing()

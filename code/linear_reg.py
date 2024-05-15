@@ -92,7 +92,7 @@ def linear_reg(filename, n_splits, ex_cols=0, plot_flag=False):
         # Show the plot
         plt.show()
 
-def main():
+def linear_reg_parsing():
     """
     Parsing from terminal
     """
@@ -129,4 +129,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    linear_reg_parsing()
