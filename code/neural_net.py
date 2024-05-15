@@ -9,15 +9,15 @@ from matplotlib import colormaps as cmaps
 
 from keras import Sequential
 from keras import layers
-# from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
+from scikeras.wrappers import KerasRegressor
 
-from abspath import AbsolutePath
+from abspath import abs_path
 from csvreader import get_data
 
-def create_neural_net(input_shape, num_hidden_layers = 7,
+def create_neural_net(input_shape, num_hidden_layers,
                         optimizer='adam', metrics=['mae'], summary_flag=False):
     """
     create_neural_net creates an instance of the Sequential class of Keras,
@@ -26,7 +26,7 @@ def create_neural_net(input_shape, num_hidden_layers = 7,
 
     Arguments:
     - input_shape (tuple): shape of the data given to the input layer of the NN
-    - num_hidden_layers (int): optional, default = 1. Number of hidden layers in the network
+    - num_hidden_layers (int). Number of hidden layers in the network
     - optimizer (str): optional, default = 'adam'. Optimizer to use
     - metrics (list): optional, default = ['mae']. List of metrics to use
     - summary_flag (bool): optional, default = False. Show the summary of the NN
@@ -51,8 +51,14 @@ def create_neural_net(input_shape, num_hidden_layers = 7,
         logger.info("Model successfully compiled, showing detailed summary ")
         model.summary()
     else:
-        logger.info(f"Model successfully compiled with {num_hidden_layers} hidden layers, skipping detailed model summary ")
+        logger.info(f"Model successfully compiled with {num_hidden_layers} hidden layers")
     return model
+
+def build_model(input_shape, num_hidden_layers=1, optimizer='adam', **kwargs):
+    """
+    Wrapper function to create a Keras model with specified hyperparameters
+    """
+    return create_neural_net(input_shape, num_hidden_layers, optimizer)
 
 
 def training(features, targets, model, epochs, **kwargs):
@@ -226,28 +232,62 @@ def main():
                          help="Show the history of the training")
     parser.add_argument("--plot", action="store_true",
                          help="Show the plot of actual vs predicted brain age")
-    #parser.add_argument("--grid", action = "store_true",
-    #                    help="Grid search for hyperparameter optimization")
+    parser.add_argument("--grid", action = "store_true",
+                        help="Grid search for hyperparameter optimization")
 
     args = parser.parse_args()
 
-
     try:
-        args.filename = AbsolutePath(args.filename,
+        args.filename = abs_path(args.filename,
                                         args.location) if args.location else args.filename
         logger.info(f"Opening file : {args.filename}")
         features, targets = get_data(args.filename, args.target, args.ex_cols)
         epochs = args.epochs
-        model = create_neural_net(np.shape(features[0]),
-                                    num_hidden_layers = args.hidden,
-                                    summary_flag = args.summary)
-        training(features,
-                    targets,
-                    model,
-                    epochs,
-                    n_splits = args.folds,
-                    hist_flag = args.history,
-                    plot_flag = args.plot)
+        input_shape = np.shape(features[0])
+        if not args.grid:
+            model = create_neural_net(input_shape,
+                                        num_hidden_layers = args.hidden,
+                                        summary_flag = args.summary)
+            training(features,
+                        targets,
+                        model,
+                        epochs,
+                        n_splits = args.folds,
+                        hist_flag = args.history,
+                        plot_flag = args.plot)
+        else: # args.grid 
+            param_grid = {
+            'model__num_hidden_layers': [1, 4, 6],
+            'model__optimizer': ['adam', 'sgd', 'rmsprop']
+            }
+
+            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape, **kwargs), epochs=epochs, batch_size=32, verbose=0)
+            grid = GridSearchCV(estimator=keras_regressor, param_grid=param_grid, scoring='neg_mean_absolute_error', refit = False, cv=args.folds)
+            scaler = StandardScaler()
+            x_scaled = scaler.fit_transform(features)
+
+            # Fitting grid search
+            logger.info("Starting Grid Search for hyperparameter optimization")
+            grid_result = grid.fit(x_scaled, targets)
+
+            # Summarize results
+            logger.info(f"Best: {grid_result.best_score_} using {grid_result.best_params_}")
+            means = grid_result.cv_results_['mean_test_score']
+            stds = grid_result.cv_results_['std_test_score']
+            params = grid_result.cv_results_['params']
+            for mean, std, param in zip(means, stds, params):
+                logger.info(f"{mean} ({std}) with: {param}")
+            model = create_neural_net(input_shape,
+                                        num_hidden_layers = grid_result.best_params_["model__num_hidden_layers"],
+                                        optimizer= grid_result.best_params_["model__optimizer"],
+                                        summary_flag = args.summary)
+            training(features,
+                        targets,
+                        model,
+                        epochs,
+                        n_splits = args.folds,
+                        hist_flag = args.history,
+                        plot_flag = args.plot)
     except FileNotFoundError:
         logger.error("File not found.")
 

@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
-from abspath import AbsolutePath
+from abspath import abs_path
 from csvreader import get_data
 
 def linear_reg(filename, n_splits, ex_cols=0, plot_flag=False):
@@ -116,7 +116,7 @@ def main():
 
     if args.folds > 4:
         try:
-            args.filename = AbsolutePath(args.filename,
+            args.filename = abs_path(args.filename,
                                           args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
             features, targets = get_data(args.filename, args.target, args.ex_cols)

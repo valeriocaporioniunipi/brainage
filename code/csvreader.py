@@ -47,7 +47,7 @@ def get_data(filename, target_name, ex_cols = 0):
     - features (ndarray): array of features
     - targets (ndarray): array of targets
     """
-    logger.info(f'Reading data from file {filename}, with {target_name} as target column ')
+    logger.info(f'Reading data from file {os.path.basename(filename)}, with {target_name} as target column ')
     features = csv_reader(filename)[:, ex_cols:]
     targets = csv_reader(filename, target_name)
 
