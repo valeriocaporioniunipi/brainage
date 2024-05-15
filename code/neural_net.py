@@ -17,8 +17,12 @@ from scikeras.wrappers import KerasRegressor
 from abspath import abs_path
 from csvreader import get_data
 
-def create_neural_net(input_shape, num_hidden_layers,
-                        optimizer='adam', metrics=['mae'], summary_flag=False):
+def create_neural_net(input_shape,
+                        num_hidden_layers,
+                        num_hidden_layer_nodes = 32,
+                        optimizer='adam',
+                        metrics=['mae'],
+                        summary_flag=False):
     """
     create_neural_net creates an instance of the Sequential class of Keras,
     creating a Neural Network with variable hidden layers, each with 32 nodes,
@@ -39,7 +43,7 @@ def create_neural_net(input_shape, num_hidden_layers,
 
     # Adding variable number of hidden layers
     for _ in range(num_hidden_layers):
-        model.add(layers.Dense(32, activation='relu'))
+        model.add(layers.Dense(num_hidden_layer_nodes, activation='relu'))
 
     model.add(layers.Dense(1, activation='linear'))  # Output layer
 
@@ -54,7 +58,11 @@ def create_neural_net(input_shape, num_hidden_layers,
         logger.info(f"Model successfully compiled with {num_hidden_layers} hidden layers")
     return model
 
-def build_model(input_shape, num_hidden_layers=1, optimizer='adam', **kwargs):
+def build_model(input_shape,
+                num_hidden_layers=1,
+                num_hidden_layer_nodes = 32,
+                optimizer='adam',
+                **kwargs):
     """
     Wrapper function to create a Keras model with specified hyperparameters
     """
@@ -104,7 +112,7 @@ def training(features, targets, model, epochs, **kwargs):
     # would inadvertently influence the preprocessing steps).
 
     # Initialization of k-fold cross-validation
-    kf = KFold(n_splits=n_splits)
+    kf = KFold(n_splits=n_splits, shuffle = True)
 
     # Initialization of lists to store evaluation metrics
     mae_scores = []
@@ -177,7 +185,7 @@ def training(features, targets, model, epochs, **kwargs):
         figh.legend()
 
     else:
-        logger.info("Skipping the plot of training history.")
+        logger.info("Skipping the plot of training history ")
 
     # Printing average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
@@ -193,14 +201,14 @@ def training(features, targets, model, epochs, **kwargs):
         # Setting plot labels and title
         axp.set_xlabel('Actual')
         axp.set_ylabel('Predicted')
-        axp.set_title('Actual vs. Predicted Brain Age')
+        axp.set_title('Actual vs. predicted age')
 
         # Adding legend and grid to the plot
         figp.legend()
         axp.grid(True)
 
     else:
-        logger.info("Skipping the plot of actual vs predicted brain age.")
+        logger.info("Skipping the plot of actual vs predicted age ")
 
     plt.show()
     return scores
@@ -218,8 +226,10 @@ def neural_net_parsing():
                         help="Name of the colums holding target values")
     parser.add_argument("--location",
                          help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--hidden", type = int, default = 1,
+    parser.add_argument("--hidden_layers", type = int, default = 1,
                          help="Number of hidden layers in the neural network")
+    parser.add_argument("--hidden_nodes", type = int, default = 32,
+                         help="Number of hidden layer nodes in the neural network")
     parser.add_argument("--epochs", type = int, default = 50,
                          help="Number of epochs of training (default 50)")
     parser.add_argument("--folds", type = int, default = 5,
@@ -246,7 +256,8 @@ def neural_net_parsing():
         input_shape = np.shape(features[0])
         if not args.grid:
             model = create_neural_net(input_shape,
-                                        num_hidden_layers = args.hidden,
+                                        num_hidden_layers = args.hidden_layers,
+                                        num_hidden_layer_nodes = args.hidden_nodes,
                                         summary_flag = args.summary)
             training(features,
                         targets,
@@ -258,11 +269,19 @@ def neural_net_parsing():
         else: # args.grid 
             param_grid = {
             'model__num_hidden_layers': [1, 4, 6],
+            'model__num_hidden_nodes' : [32, 48],
             'model__optimizer': ['adam', 'sgd', 'rmsprop']
             }
 
-            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape, **kwargs), epochs=epochs, batch_size=32, verbose=0)
-            grid = GridSearchCV(estimator=keras_regressor, param_grid=param_grid, scoring='neg_mean_absolute_error', refit = False, cv=args.folds)
+            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape, **kwargs),
+                                            epochs=epochs,
+                                            batch_size=32,
+                                            verbose=0)
+            grid = GridSearchCV(estimator=keras_regressor,
+                                param_grid=param_grid,
+                                scoring='neg_mean_absolute_error',
+                                refit = False,
+                                cv = args.folds)
             scaler = StandardScaler()
             x_scaled = scaler.fit_transform(features)
 
@@ -279,6 +298,7 @@ def neural_net_parsing():
                 logger.info(f"{mean} ({std}) with: {param}")
             model = create_neural_net(input_shape,
                                         num_hidden_layers = grid_result.best_params_["model__num_hidden_layers"],
+                                        num_hidden_layer_nodes = grid_result.best_params_["model__num_hidden_nodes"],
                                         optimizer= grid_result.best_params_["model__optimizer"],
                                         summary_flag = args.summary)
             training(features,
