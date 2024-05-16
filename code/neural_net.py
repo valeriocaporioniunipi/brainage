@@ -28,14 +28,18 @@ def create_neural_net(input_shape,
     creating a Neural Network with variable hidden layers, each with 32 nodes,
     and setting the initial weights at random values.
 
-    Arguments:
-    - input_shape (tuple): shape of the data given to the input layer of the NN
-    - num_hidden_layers (int). Number of hidden layers in the network
-    - optimizer (str): optional, default = 'adam'. Optimizer to use
-    - metrics (list): optional, default = ['mae']. List of metrics to use
-    - summary_flag (bool): optional, default = False. Show the summary of the NN
-
-    Return: the instance of the Sequential class, i.e. the model object
+    :param input_shape: shape of the data given to the input layer of the NN
+    :type input_shape: tuple
+    :param num_hidden_layers: number of hidden layers in the network
+    :type num_hidden_layers: int
+    :param optimizer: optional (default = 'adam'): Optimizer to use
+    :type optimizer: str
+    :param metrics: optional (default = ['mae']): List of metrics to use
+    :type metrics: list
+    :param summary_flag: optional (default = False): Show the summary of the NN
+    :type summary_flag: Bool
+    :return: Neural Network model
+    :rntype: SequentialType
     """
     
     # Defining the model
@@ -66,54 +70,39 @@ def build_model(input_shape,
                 **kwargs):
     """
     Wrapper function to create a Keras model with specified hyperparameters
+    Non so bene che scrivere qui
     """
     return create_neural_net(input_shape, num_hidden_layers, optimizer)
 
 
 def training(features, targets, model, epochs, **kwargs):
     """"
-    training trains a neural network with k-folding
+    training function trains a neural network with k-folding. As input the function needs a matrix 
+    containing features and a target array with the feature under exam. Is necessary a neural network model 
+    and to specify number of epochs. Other arguments are possible and are listed below. The basic
+    output is the printing of MAE, MSE, R. It can shows also Actual vs Predicted brain age scatter plot and 
+    Training history plot
 
-    Arguments:
-    - features (ndarray): matrix of features
-    - targets (ndarray): array of targets
-    - model (SequentialType): NN model, instance of Sequential class
-    - epochs (int): number of epochs during neural network training
-    - **kwargs: additional keyword arguments for configuring the function behavior
-        - n_splits (int): number of folds for cross-validation
-        - hist_flag (bool): optional, default = False. Plot a graph showing val_loss
-            (labeled as validation) vs loss (labeled as training) during epochs.
-        - plot_flag (bool): optional, default = False.
-            Show the plot of actual vs predicted brain age.
-
-    Return:
-    - scores (ndarray): array holding MAE, MSE and R-squared, averaged among the folds
-
-    Printing:
-    - MAE (mean absolute error)
-    - MSE (mean squared error)
-    - R-squared
-    Optionally showing:
-    
-    - Actual vs Predicted brain age scatter plot
-    - Training history plot
-
-    :param filename: path to the CSV file containing the dataset 
-    :type filename: str
+    :param features: matrix of features
+    :type features: ndarray
+    :param targets: array of targets
+    :type targets: array
+    :param model: NN model, instance of Sequential class
+    :type model: SequentialType
     :param epochs: number of epochs during neural network training
     :type epochs: int
-    :param n_splits: number of folds for cross-validation
+    :param n_splits: optional (default = 5): number of folds for cross-validation
     :type n_splits: int
-    :param ex_cols: optional (default = 0): number of folds for cross-validation
-    :type ex_cols: int
-    :param summary_flag: optional (default = False): print the structure of neural network
-    :type summary_flag: bool
-    :param hist_flag: optional (default = False): plot a graph showing val_loss(labeled as valuation) vs loss(labeled as training) during epochs
+    :param hist_flag: optional (default = False). Plot a graph showing val_loss
+        (labeled as validation) vs loss (labeled as training) during epochs.
     :type hist_flag: bool
-    :param plot_flag: optional (default = False): show the plot of actual vs predic
+    :param plot_flag: optional (default = False). 
+        Show the plot of actual vs predicted brain age.
     :type plot_flag: bool
+    :return: a matrix whose columns are array holding MAE, MSE and R-squared, averaged among the folds
+    :rntype: ndarray
 
-    return: None
+
 
     """
 
@@ -265,6 +254,40 @@ def training(features, targets, model, epochs, **kwargs):
 def neural_net_parsing():
     """
     Parsing from terminal
+
+    The parameters listed below are not parameters of the functions but are parsing arguments that have 
+    to be passed to command line when executing the program as follow:
+
+    .. code::
+
+        $Your_PC>python neural_net.py file.csv --folds 7 --ex_cols 4 --plot  
+
+
+    :param filename: Name of the file that has to be analized
+    :type filename: str
+    :param target: optional (default = AGE_AT_SCAN): Name of the colums holding target values
+    :type target: str
+    :param location: optional: Location of the file, i.e. folder containing it
+    :type location: str
+    :param hidden_layers: optional (default = 1): Number of hidden layers in the neural network
+    :type hidden_layers: int
+    :param hidden_nodes: optional (default = 32): Number of hidden layer nodes in the neural network
+    :type hidden_nodes: int
+    :param epochs: optional (default = 50): Number of epochs of training
+    :type epochs: int
+    :param folds: optional (>4, default = 5): Number of folds in the k-folding
+    :type folds: int
+    :param ex_cols: optional (default = 3): Number of columns excluded when importing
+    :type ex_cols: int
+    :param summary: optional: Show the summary of the neural network
+    :type summary: bool
+    :param history: optional: Show the history of the training
+    :type history: bool
+    :param plot: optional: Show the plot of actual vs predicted brain age
+    :type plot: bool
+    :param grid: optional: Grid search for hyperparameter optimization
+    :type grid: bool
+
     """
     parser = argparse.ArgumentParser(description=
         'Neural network predicting the age of patients from magnetic resonance imaging')
