@@ -20,26 +20,31 @@ def NeuralNetwork(filename, epochs, n_splits, ex_cols = 0,
     """
     NeuralNetwork creates a neural network. Inputs data are splitted in two parts: 'train' and
     'test'; both inputs are normalized in order to have zero as mean and one as variance.
-
-    Arguments:
-    -filename (str): path to the CSV file
-    -epochs (int): number of epochs during neural network training
-    -n_splits (int): number of folds for cross-validation
-    -ex_cols (int): optional, default = 0. Number of columns excluded from dataset
-    -summary_flag (bool): optional, default = False. Print the structure of neural network
-    -hist_flag (bool): optional, default = False. Plot a graph showing
-     val_loss(labeled as valuation) vs loss(labeled as training) during epochs
-    -plot_flag (bool): optional, default = False. Show the plot of actual vs predic
-
-    Return:
-    None.
-    It prints 
+    As output it prints 
     - MAE (mean absolute error)
     - MSE (mean squared error)
     - R-squared
-    Optionally shows
+    and optionally shows
     - Actual vs Predicted brain age scatter plot
     - Training history plot
+
+    :param filename: path to the CSV file containing the dataset 
+    :type filename: str
+    :param epochs: number of epochs during neural network training
+    :type epochs: int
+    :param n_splits: number of folds for cross-validation
+    :type n_splits: int
+    :param ex_cols: optional (default = 0): number of folds for cross-validation
+    :type ex_cols: int
+    :param summary_flag: optional (default = False): print the structure of neural network
+    :type summary_flag: bool
+    :param hist_flag: optional (default = False): plot a graph showing val_loss(labeled as valuation) vs loss(labeled as training) during epochs
+    :type hist_flag: bool
+    :param plot_flag: optional (default = False): show the plot of actual vs predic
+    :type plot_flag: bool
+
+    return: None
+
     """
     # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX

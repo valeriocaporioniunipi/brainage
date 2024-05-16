@@ -14,16 +14,19 @@ from csvreader import GetData
 def LinRegression(filename, n_splits, ex_cols=0, plot_flag=False):
 
     """
-    LinRegression performs linear regression with k-fold cross-validation on the given dataset.
+    LinRegression performs linear regression with k-fold cross-validation on the
+    given dataset and prints evaluation metrics of the linear regression model.
 
-    Arguments:
-    - filename (str): path to the CSV file containing the dataset 
-    - n_splits (int): number of folds for cross-validation
-    - ex_cols (int): optional, default = 0. Number of columns excluded from dataset
-    - plot_flag (bool): optional, default = False. Whether to plot the actual vs. predicted values
+    :param filename: path to the CSV file containing the dataset 
+    :type filename: str
+    :param n_splits: number of folds for cross-validation
+    :type n_splits: int
+    :param ex_cols: optional (default = 0): number of folds for cross-validation
+    :type ex_cols: int
+    :param plot_flag: optional (default = False): Whether to plot the actual vs. predicted values
+    :type plot_flag: bool
+    :return: None
 
-    Returns:
-    - None. Prints evaluation metrics of the linear regression model.
     """
     # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX

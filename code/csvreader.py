@@ -6,23 +6,22 @@ from loguru import logger
 
 
 def GetData(csv_file, column_name=None, show_flag=False):
+
     """
     GetData allows to read the data from a CSV file and converts them into a NumPy array.
     It can also show the entire dataset as a Pandas dataframe on terminal
     or show a single column of the data table.
-    When importing this code as a module by writing
-
-    from csvreader import GetData
-
     the GetData function does not show the dataframe, unless specified by changing show_flag argument. 
 
-    Arguments:
-    -csv_file (str): path to the CSV file
-    -column_name (str): optional, default = None. Name of the column to select
-    -show_flag (bool): optional, default = False. If True, the entire dataframe is shown.
+    :param csvfile: path to the CSV file
+    :type csvfile: str
+    :param column_name: optional (default = None): name of the column to select
+    :type column_name: str
+    :param show_flag: optional (default = False): if True, the entire dataframe is shown.
+    :type show_flag: bool
+    :return: the function returns a multidimensional numpy array if no column_name is passed as argument, otherwise it returns a unidimensional numpy array 
+    :rtype: numpy.ndarray
 
-    Return:
-    numpy.ndarray: The function returns a NumPy array
     """
     df = pd.read_csv(csv_file, delimiter=';')
     if column_name is None:
