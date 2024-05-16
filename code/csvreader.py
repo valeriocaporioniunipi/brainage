@@ -36,14 +36,15 @@ def get_data(filename, target_name, ex_cols = 0):
     """
     get_data obtains the features and target arrays
 
-    Arguments:
-    - filename (str): name of the file which data are read from
-    - target_name (str): name of the column of the csv file that contains targets
-    - ex_cols (int): optional, default = 0. Excluded columns
+    :param filename: path to the CSV file with the data
+    :type filename: str
+    :param target_name: optional (default = None): name of the column of the csv file that contains targets
+    :type target_name: str
+    :param ex_cols: optional (default = 0): initial excluded columns
+    :type ex_cols: int
+    :return: numpy arrays of features and target
+    :rtype: numpy.ndarray, numpy.array
 
-    Return:
-    - features (ndarray): array of features
-    - targets (ndarray): array of targets
     """
     logger.info(f'Reading data from file {os.path.basename(filename)}, with {target_name} as target column ')
     features = csv_reader(filename)[:, ex_cols:]
@@ -56,7 +57,33 @@ def get_data(filename, target_name, ex_cols = 0):
     return features, targets
 
 
-def main():
+def csv_reader_parsing():
+
+    """
+    csv_reader_parsing allows to print the data from a csv file.
+    The parameters listed below are not parameters of the functions but are parsing arguments that have 
+    to be passed to command line when executing the program as follow:
+
+    .. code::
+
+        Your_PC>python csvreader.py show/show_column  csvfile_path --column 
+
+    where first two are mandatory argument, while column is optional and if has to be modified,
+    that can be achieved with this notation in this example:
+
+    .. code::
+
+        Your_PC>python csvreader.py show C:/users/.../file.csv --column 4  
+
+    :param command: can be 'show' or 'show_column'. Is used to decide to print or entire dataset or a single column
+    :type filename: str
+    :param filename: path to the CSV file
+    :type target_name: str
+    :param column: optional: name of the column to display (required for 'show_column' command)
+    :type column: str
+    :return: None
+    """
+
     parser = argparse.ArgumentParser(description="CSV Reader - A tool to read CSV files with Pandas.")
 
     parser.add_argument("command", choices=["show", "show_column"], help="Choose the command to execute")
@@ -77,4 +104,4 @@ def main():
         logger.error("File not found", e)
 
 if __name__ == "__main__":
-    main()
+    csv_reader_parsing()
