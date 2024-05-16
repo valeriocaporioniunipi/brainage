@@ -60,45 +60,44 @@ def get_data(filename, target_name, ex_cols = 0, **kwargs):
         return features, targets
 
 def oversampling(features, targets, **kwargs):
-    # Step 1: Extract optional parameters
+    # Extract optional parameters
     bins = kwargs.get('bins', 10)
     group = kwargs.get('group', None)
     
-    # Step 2: Calculate target histogram
+    # Calculate target histogram
     hist, edges = np.histogram(targets, bins=bins)
     
-    # Step 3: Find the bin with the maximum count
+    # Find the bin with the maximum count
     max_bin_index = np.argmax(hist)
     max_count = hist[max_bin_index]
 
-    # Step 4: Check if the bin with the maximum count has samples available
+    # Check if the bin with the maximum count has samples available
     if max_count == 0:
         raise ValueError("No samples available in the bin with the maximum count for oversampling. Adjust bin size or provide more data.")
 
-    # Step 5: Oversample the minority classes to match the maximum count
+    # Oversample the minority classes to match the maximum count
     oversampled_features = []
     oversampled_targets = []
     oversampled_group = [] if group is not None else None
 
     for i in range(bins - 1):
-        # Step 6: Find indices of samples within the current bin
+        # Find indices of samples within the current bin
         bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
         
-        # Step 8: Randomly sample with replacement from the indices to match max_count
+        # Randomly sample with replacement from the indices to match max_count
         sampled_indices = np.random.choice(bin_indices, size=max_count, replace=True)
         
-        # Step 9: Append the sampled features and targets to the oversampled lists
+        # Append the sampled features and targets to the oversampled lists
         oversampled_features.append(features[sampled_indices])
         oversampled_targets.append(targets[sampled_indices])
         if group is not None:
             oversampled_group.append(group[sampled_indices])
 
-    # Step 10: Concatenate the oversampled features and targets
+    # Concatenate the oversampled features and targets
     new_features = np.concatenate(oversampled_features)
     new_targets = np.concatenate(oversampled_targets)
     new_group = np.concatenate(oversampled_group) if group is not None else None
 
-    # Step 11: Return the oversampled data
     return new_features, new_targets, new_group if group is not None else (new_features, new_targets)
 
 def main():
