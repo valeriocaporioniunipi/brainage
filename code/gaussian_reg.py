@@ -8,13 +8,13 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
-from abspath import AbsolutePath
-from csvreader import GetData
+from abspath import abs_path
+from csvreader import get_data
 
-def GaussRegression(filename, n_splits, ex_cols=0,  plot_flag=False):
+def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
     """
-    GaussRegression performs a gaussian regression with k-fold cross-validation
-    on the given dataset and prints evaluation metrics of the gaussian regression model.
+    gaussian_reg performs a Gaussian regression with k-fold cross-validation on the given dataset
+    and prints evaluation metrics of the gaussian regression model.
 
     :param filename: path to the CSV file containing the dataset 
     :type filename: str
@@ -29,8 +29,8 @@ def GaussRegression(filename, n_splits, ex_cols=0,  plot_flag=False):
     """
     # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
-    x = GetData(filename)[:, ex_cols:] 
-    y = GetData(filename, "AGE_AT_SCAN")
+    x = get_data(filename)[:, ex_cols:] 
+    y = get_data(filename, "AGE_AT_SCAN")
 
     # Standardize features
     scaler = StandardScaler()
@@ -95,30 +95,42 @@ def GaussRegression(filename, n_splits, ex_cols=0,  plot_flag=False):
         # Show the plot
         plt.show()
 
-def main():
-    parser = argparse.ArgumentParser(description='Gaussian regression with k-fold cross-validation predicting the age of patients from magnetic resonance imaging')
+def gaussian_reg_parsing():
+    """
+    Parsing from terminal
+    """
+    parser = argparse.ArgumentParser(description=
+        'Gaussian regression predicting the age of patients from magnetic resonance imaging')
 
-    parser.add_argument("filename", help="Name of the file that has to be analyzed")
-    parser.add_argument("--location", help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--n_splits", type=int, default=5, help="Number of folds for k-folding cross-validation")
-    parser.add_argument("--ex_cols", type = int, default=3, help="Number of columns excluded when importing data")
-    parser.add_argument("--plot", action='store_true', help="Show the plot of actual vs predicted brain age")
+    parser.add_argument("filename",
+                         help="Name of the file that has to be analized")
+    parser.add_argument("--target", default = "AGE_AT_SCAN",
+                        help="Name of the colums holding target values")
+    parser.add_argument("--location",
+                         help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--folds", type = int, default = 5,
+                         help="Number of folds in the k-folding (>4, default 5)")
+    parser.add_argument("--ex_cols", type = int, default = 3,
+                         help="Number of columns excluded when importing (default 3)")
+    parser.add_argument("--plot", action="store_true",
+                         help="Show the plot of actual vs predicted brain age")
 
     args = parser.parse_args()
 
-    if args.n_splits > 4:
+    if args.folds > 4:
         try:
-            if not args.location:
-                GaussRegression(args.filename, n_splits=args.n_splits, ex_cols = args.ex_cols, plot_flag=args.plot)
-            else:
-                args.filename = AbsolutePath(args.filename, args.location)
-                GaussRegression(args.filename, n_splits=args.n_splits, ex_cols = args.ex_cols, plot_flag=args.plot)
+            args.filename = abs_path(args.filename,
+                                          args.location) if args.location else args.filename
+            logger.info(f"Opening file : {args.filename}")
+            features, targets = get_data(args.filename, args.target, args.ex_cols)
+            gaussian_reg(features, targets, args.epochs, args.folds,
+                       args.summary, args.history, args.plot)
         except FileNotFoundError:
             logger.error("File not found.")
-            return None
-    else: 
-        logger.error("Invalid number of folds: at least 5 folds required")
+    else:
+        logger.error("Invalid number of folds: at least 5 folds required.")
+
 
 if __name__ == "__main__":
-    main()
+    gaussian_reg_parsing()
 
