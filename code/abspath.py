@@ -1,9 +1,9 @@
 import os
 
 
-def AbsolutePath(local_filename, data_folder):
+def abs_path(local_filename, data_folder):
     """
-    AbsolutePath gets the absolute path of the file given the name of the folder containing the data
+    abs_path gets the absolute path of the file given the name of the folder containing the data
     and the name of the file inside that folder and assuming that the repository contains a data folder
     and a code folder.
 

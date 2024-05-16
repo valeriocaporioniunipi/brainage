@@ -4,17 +4,16 @@ import os
 import pandas as pd
 from loguru import logger
 
-
-def GetData(csv_file, column_name=None, show_flag=False):
+def csv_reader(csv_file, column_name=None, show_flag=False):
     """
-    GetData allows to read the data from a CSV file and converts them into a NumPy array.
+    csv_reader allows to read the data from a CSV file and converts them into a NumPy array.
     It can also show the entire dataset as a Pandas dataframe on terminal
     or show a single column of the data table.
     When importing this code as a module by writing
 
-    from csvreader import GetData
+    from csvreader import csv_reader
 
-    the GetData function does not show the dataframe, unless specified by changing show_flag argument. 
+    the csv_reader function does not show the dataframe, unless specified by changing show_flag argument. 
 
     Arguments:
     -csv_file (str): path to the CSV file
@@ -35,6 +34,29 @@ def GetData(csv_file, column_name=None, show_flag=False):
             print(df[column_name])
         return np.array(df[column_name].values)
 
+def get_data(filename, target_name, ex_cols = 0):
+    """
+    get_data obtains the features and target arrays
+
+    Arguments:
+    - filename (str): name of the file which data are read from
+    - target_name (str): name of the column of the csv file that contains targets
+    - ex_cols (int): optional, default = 0. Excluded columns
+
+    Return:
+    - features (ndarray): array of features
+    - targets (ndarray): array of targets
+    """
+    logger.info(f'Reading data from file {os.path.basename(filename)}, with {target_name} as target column ')
+    features = csv_reader(filename)[:, ex_cols:]
+    targets = csv_reader(filename, target_name)
+
+    # Checking if the first dimension of features matches the length of targets
+    if len(features) != len(targets):
+        logger.error("Number of samples in features and targets do not match")
+    
+    return features, targets
+
 
 def main():
     parser = argparse.ArgumentParser(description="CSV Reader - A tool to read CSV files with Pandas.")
@@ -47,12 +69,12 @@ def main():
 
     try:
         if args.command == "show":
-            GetData(args.filename, show_flag=True)
+            csv_reader(args.filename, show_flag=True)
         elif args.command == "show_column":
             if not args.column:
                 parser.error("The '--column' argument is required for 'show_column' command.")
             else:
-                GetData(args.filename, args.column, show_flag=True)
+                csv_reader(args.filename, args.column, show_flag=True)
     except FileNotFoundError as e:
         logger.error("File not found", e)
 
