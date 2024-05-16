@@ -13,15 +13,14 @@ from csvreader import get_data
 
 def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
     """
-    gaussian_reg performs a Gaussian regression with k-fold cross-validation on the given dataset
-    and prints evaluation metrics of the gaussian regression model.
+    gaussian_reg performs gaussian regression with k-fold cross-validation on the
+    given dataset and prints evaluation metrics of the gaussian regression model
+    such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
 
     :param filename: path to the CSV file containing the dataset 
     :type filename: str
     :param n_splits: number of folds for cross-validation
     :type n_splits: int
-    :param ex_cols: optional (default = 0): number of folds for cross-validation
-    :type ex_cols: int
     :param plot_flag: optional (default = False): Whether to plot the actual vs. predicted values
     :type plot_flag: bool
     :return: None
@@ -97,7 +96,42 @@ def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
 
 def gaussian_reg_parsing():
     """
-    Parsing from terminal
+    gaussian_reg function parsed that runs when the .py file is called.
+    It performs a  gaussian regression with k-fold cross-validation
+    predicting the age of patients from magnetic resonance imaging and
+    prints evaluation metrics of the linear regression model 
+    such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
+    There are two ways to pass the csv file to this function. It's possible to
+    pass the absolutepath of the dataset or you can store the dataset in a brother folder
+    of the one containing code, and pass to the parsing function the filename and his container-folder.
+    The parameters listed below are not parameters of the functions but are parsing arguments that have 
+    to be passed to command line when executing the program as follow:
+
+    .. code::
+
+        $Your_PC>python gaussian_reg.py file.csv --target --location --folds --ex_cols --plot 
+
+    where file.csv is the only mandatory argument, while others are optional and takes some default values,
+    that if they have to be modified you can write for example:
+
+    .. code::
+
+        $Your_PC>python gaussian_reg.py file.csv --folds 10  
+
+    :param filename: path to the CSV file containing the dataset or the name of the file if --location argument is passed 
+    :type filename: str
+    :param target: optional (default = AGE_AT_SCAN): Name of the column holding target values
+    :type target: str
+    :param location: optional: Location of the file, i.e. folder containing it 
+    :type location: str
+    :param folds: optional (>4, default 5):number of folds for cross-validation
+    :type folds: int
+    :param ex_cols: optional (default = 3): columns excluded when importing file
+    :type ex_cols: int
+    :param plot: optional (default = False): Show the plot of actual vs predicted brain age
+    :type plot: bool
+    :return: None
+
     """
     parser = argparse.ArgumentParser(description=
         'Gaussian regression predicting the age of patients from magnetic resonance imaging')

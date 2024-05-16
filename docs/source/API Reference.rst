@@ -6,28 +6,47 @@ Here you can find the documentation of all the functions of the library
 
    <br><br>
 
-.. autofunction:: linear_reg.LinRegression
+.. autofunction:: linear_reg.linear_reg
 
 .. raw:: html
 
    <br><br><br><br>
 
-.. autofunction:: gaussian_reg.GaussRegression
+.. autofunction:: gaussian_reg.gaussian_reg
 
 .. raw:: html
 
    <br><br><br><br>
 
-.. autofunction:: csvreader.GetData
+.. autofunction:: csvreader.csv_reader
 
 .. raw:: html
 
    <br><br><br><br>
 
-.. autofunction:: abspath.AbsolutePath
+.. autofunction:: csvreader.get_data
 
 .. raw:: html
 
    <br><br><br><br>
 
-.. autofunction:: neural_net.NeuralNetwork
+.. autofunction:: abspath.abs_path
+
+.. raw:: html
+
+   <br><br><br><br>
+
+.. autofunction:: linear_reg.linear_reg_parsing
+
+.. raw:: html
+
+   <br><br><br><br>
+
+.. autofunction:: gaussian_reg.gaussian_reg_parsing
+
+.. raw:: html
+
+   <br><br><br><br>
+
+.. autofunction:: csvreader.csv_reader_parsing
+   

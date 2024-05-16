@@ -34,16 +34,16 @@
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
 <p>Here you can find the documentation of all the functions of the library</p>
 <br><br><dl class="py function">
-<dt class="sig sig-object py" id="linear_reg.LinRegression">
-<span class="sig-prename descclassname"><span class="pre">linear_reg.</span></span><span class="sig-name descname"><span class="pre">LinRegression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ex_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#linear_reg.LinRegression" title="Link to this definition">¶</a></dt>
-<dd><p>LinRegression performs linear regression with k-fold cross-validation on the
-given dataset and prints evaluation metrics of the linear regression model.</p>
+<dt class="sig sig-object py" id="linear_reg.linear_reg">
+<span class="sig-prename descclassname"><span class="pre">linear_reg.</span></span><span class="sig-name descname"><span class="pre">linear_reg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#linear_reg.linear_reg" title="Link to this definition">¶</a></dt>
+<dd><p>linear_reg performs linear regression with k-fold cross-validation on the
+given dataset and prints evaluation metrics of the linear regression model
+such as MAE (mean absolute error), MSE (mean squared error) and R-squared.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset</p></li>
 <li><p><strong>n_splits</strong> (<em>int</em>) – number of folds for cross-validation</p></li>
-<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 0): number of folds for cross-validation</p></li>
 <li><p><strong>plot_flag</strong> (<em>bool</em>) – optional (default = False): Whether to plot the actual vs. predicted values</p></li>
 </ul>
 </dd>
@@ -54,16 +54,16 @@ given dataset and prints evaluation metrics of the linear regression model.</p>
 </dd></dl>
 
 <br><br><br><br><dl class="py function">
-<dt class="sig sig-object py" id="gaussian_reg.GaussRegression">
-<span class="sig-prename descclassname"><span class="pre">gaussian_reg.</span></span><span class="sig-name descname"><span class="pre">GaussRegression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ex_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian_reg.GaussRegression" title="Link to this definition">¶</a></dt>
-<dd><p>GaussRegression performs a gaussian regression with k-fold cross-validation
-on the given dataset and prints evaluation metrics of the gaussian regression model.</p>
+<dt class="sig sig-object py" id="gaussian_reg.gaussian_reg">
+<span class="sig-prename descclassname"><span class="pre">gaussian_reg.</span></span><span class="sig-name descname"><span class="pre">gaussian_reg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ex_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian_reg.gaussian_reg" title="Link to this definition">¶</a></dt>
+<dd><p>gaussian_reg performs gaussian regression with k-fold cross-validation on the
+given dataset and prints evaluation metrics of the gaussian regression model
+such as MAE (mean absolute error), MSE (mean squared error) and R-squared.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset</p></li>
 <li><p><strong>n_splits</strong> (<em>int</em>) – number of folds for cross-validation</p></li>
-<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 0): number of folds for cross-validation</p></li>
 <li><p><strong>plot_flag</strong> (<em>bool</em>) – optional (default = False): Whether to plot the actual vs. predicted values</p></li>
 </ul>
 </dd>
@@ -74,12 +74,12 @@ on the given dataset and prints evaluation metrics of the gaussian regression mo
 </dd></dl>
 
 <br><br><br><br><dl class="py function">
-<dt class="sig sig-object py" id="csvreader.GetData">
-<span class="sig-prename descclassname"><span class="pre">csvreader.</span></span><span class="sig-name descname"><span class="pre">GetData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#csvreader.GetData" title="Link to this definition">¶</a></dt>
-<dd><p>GetData allows to read the data from a CSV file and converts them into a NumPy array.
+<dt class="sig sig-object py" id="csvreader.csv_reader">
+<span class="sig-prename descclassname"><span class="pre">csvreader.</span></span><span class="sig-name descname"><span class="pre">csv_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#csvreader.csv_reader" title="Link to this definition">¶</a></dt>
+<dd><p>csv_reader allows to read the data from a CSV file and converts them into a NumPy array.
 It can also show the entire dataset as a Pandas dataframe on terminal
 or show a single column of the data table.
-the GetData function does not show the dataframe, unless specified by changing show_flag argument.</p>
+The csv_reader function does not show the dataframe, unless specified by changing show_flag argument.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -98,9 +98,30 @@ the GetData function does not show the dataframe, unless specified by changing s
 </dd></dl>
 
 <br><br><br><br><dl class="py function">
-<dt class="sig sig-object py" id="abspath.AbsolutePath">
-<span class="sig-prename descclassname"><span class="pre">abspath.</span></span><span class="sig-name descname"><span class="pre">AbsolutePath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abspath.AbsolutePath" title="Link to this definition">¶</a></dt>
-<dd><p>AbsolutePath gets the absolute path of the file given the name of the folder containing the data
+<dt class="sig sig-object py" id="csvreader.get_data">
+<span class="sig-prename descclassname"><span class="pre">csvreader.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ex_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#csvreader.get_data" title="Link to this definition">¶</a></dt>
+<dd><p>get_data obtains the features and target arrays</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file with the data</p></li>
+<li><p><strong>target_name</strong> (<em>str</em>) – optional (default = None): name of the column of the csv file that contains targets</p></li>
+<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 0): initial excluded columns</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy arrays of features and target</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray, numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<br><br><br><br><dl class="py function">
+<dt class="sig sig-object py" id="abspath.abs_path">
+<span class="sig-prename descclassname"><span class="pre">abspath.</span></span><span class="sig-name descname"><span class="pre">abs_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abspath.abs_path" title="Link to this definition">¶</a></dt>
+<dd><p>abs_path gets the absolute path of the file given the name of the folder containing the data
 and the name of the file inside that folder and assuming that the repository contains a data folder
 and a code folder.</p>
 <dl class="field-list simple">
@@ -120,31 +141,79 @@ and a code folder.</p>
 </dd></dl>
 
 <br><br><br><br><dl class="py function">
-<dt class="sig sig-object py" id="neural_net.NeuralNetwork">
-<span class="sig-prename descclassname"><span class="pre">neural_net.</span></span><span class="sig-name descname"><span class="pre">NeuralNetwork</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ex_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hist_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#neural_net.NeuralNetwork" title="Link to this definition">¶</a></dt>
-<dd><p>NeuralNetwork creates a neural network. Inputs data are splitted in two parts: ‘train’ and
-‘test’; both inputs are normalized in order to have zero as mean and one as variance.
-As output it prints 
-- MAE (mean absolute error)
-- MSE (mean squared error)
-- R-squared
-and optionally shows
-- Actual vs Predicted brain age scatter plot
-- Training history plot</p>
+<dt class="sig sig-object py" id="linear_reg.linear_reg_parsing">
+<span class="sig-prename descclassname"><span class="pre">linear_reg.</span></span><span class="sig-name descname"><span class="pre">linear_reg_parsing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#linear_reg.linear_reg_parsing" title="Link to this definition">¶</a></dt>
+<dd><p>linear_reg function parsed that runs when the .py file is called.
+It performs a  linear regression with k-fold cross-validation
+predicting the age of patients from magnetic resonance imaging and
+prints evaluation metrics of the linear regression model 
+such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
+There are two ways to pass the csv file to this function. It’s possible to
+pass the absolutepath of the dataset or you can store the dataset in a brother folder
+of the one containing code, and pass to the parsing function the filename and his container-folder.
+The parameters listed below are not parameters of the functions but are parsing arguments that have 
+to be passed to command line when executing the program as follow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python linear_reg.py file.csv --target --location --folds --ex_cols --plot 
+</pre></div>
+</div>
+<p>where file.csv is the only mandatory argument, while others are optional and takes some default values,
+that if they have to be modified you can write for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python linear_reg.py file.csv --folds 10  
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset</p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – number of epochs during neural network training</p></li>
-<li><p><strong>n_splits</strong> (<em>int</em>) – number of folds for cross-validation</p></li>
-<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 0): number of folds for cross-validation</p></li>
-<li><p><strong>summary_flag</strong> (<em>bool</em>) – optional (default = False): print the structure of neural network</p></li>
-<li><p><strong>hist_flag</strong> (<em>bool</em>) – optional (default = False): plot a graph showing val_loss(labeled as valuation) vs loss(labeled as training) during epochs</p></li>
-<li><p><strong>plot_flag</strong> (<em>bool</em>) – optional (default = False): show the plot of actual vs predic</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset or the name of the file if –location argument is passed</p></li>
+<li><p><strong>target</strong> (<em>str</em>) – optional (default = AGE_AT_SCAN): Name of the column holding target values</p></li>
+<li><p><strong>location</strong> (<em>str</em>) – optional: Location of the file, i.e. folder containing it</p></li>
+<li><p><strong>folds</strong> (<em>int</em>) – optional (&gt;4, default 5):number of folds for cross-validation</p></li>
+<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 3): columns excluded when importing file</p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – optional (default = False): Show the plot of actual vs predicted brain age</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
-<p>return: None</p>
+</dd></dl>
+
+<br><br><br><br><dl class="py function">
+<dt class="sig sig-object py" id="gaussian_reg.gaussian_reg_parsing">
+<span class="sig-prename descclassname"><span class="pre">gaussian_reg.</span></span><span class="sig-name descname"><span class="pre">gaussian_reg_parsing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gaussian_reg.gaussian_reg_parsing" title="Link to this definition">¶</a></dt>
+<dd><p>gaussian_reg function parsed that runs when the .py file is called.
+It performs a  gaussian regression with k-fold cross-validation
+predicting the age of patients from magnetic resonance imaging and
+prints evaluation metrics of the linear regression model 
+such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
+There are two ways to pass the csv file to this function. It’s possible to
+pass the absolutepath of the dataset or you can store the dataset in a brother folder
+of the one containing code, and pass to the parsing function the filename and his container-folder.
+The parameters listed below are not parameters of the functions but are parsing arguments that have 
+to be passed to command line when executing the program as follow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python gaussian_reg.py file.csv --target --location --folds --ex_cols --plot 
+</pre></div>
+</div>
+<p>where file.csv is the only mandatory argument, while others are optional and takes some default values,
+that if they have to be modified you can write for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python gaussian_reg.py file.csv --folds 10  
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset or the name of the file if –location argument is passed</p></li>
+<li><p><strong>target</strong> (<em>str</em>) – optional (default = AGE_AT_SCAN): Name of the column holding target values</p></li>
+<li><p><strong>location</strong> (<em>str</em>) – optional: Location of the file, i.e. folder containing it</p></li>
+<li><p><strong>folds</strong> (<em>int</em>) – optional (&gt;4, default 5):number of folds for cross-validation</p></li>
+<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 3): columns excluded when importing file</p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – optional (default = False): Show the plot of actual vs predicted brain age</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -169,11 +238,13 @@ and optionally shows
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#linear_reg.LinRegression"><code class="docutils literal notranslate"><span class="pre">LinRegression()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gaussian_reg.GaussRegression"><code class="docutils literal notranslate"><span class="pre">GaussRegression()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#csvreader.GetData"><code class="docutils literal notranslate"><span class="pre">GetData()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#abspath.AbsolutePath"><code class="docutils literal notranslate"><span class="pre">AbsolutePath()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#neural_net.NeuralNetwork"><code class="docutils literal notranslate"><span class="pre">NeuralNetwork()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linear_reg.linear_reg"><code class="docutils literal notranslate"><span class="pre">linear_reg()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gaussian_reg.gaussian_reg"><code class="docutils literal notranslate"><span class="pre">gaussian_reg()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#csvreader.csv_reader"><code class="docutils literal notranslate"><span class="pre">csv_reader()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#csvreader.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#abspath.abs_path"><code class="docutils literal notranslate"><span class="pre">abs_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linear_reg.linear_reg_parsing"><code class="docutils literal notranslate"><span class="pre">linear_reg_parsing()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gaussian_reg.gaussian_reg_parsing"><code class="docutils literal notranslate"><span class="pre">gaussian_reg_parsing()</span></code></a></li>
 </ul>
 </li>
 </ul>
