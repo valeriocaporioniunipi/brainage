@@ -15,14 +15,14 @@ from sklearn.preprocessing import StandardScaler
 from scikeras.wrappers import KerasRegressor
 
 from abspath import abs_path
-from csvreader import get_data
+from csvreader import get_data, oversampling
 
 def create_neural_net(input_shape,
-                        num_hidden_layers,
+                        num_hidden_layers = 1,
                         num_hidden_layer_nodes = 32,
-                        optimizer='adam',
-                        metrics=['mae'],
-                        summary_flag=False):
+                        optimizer = 'adam',
+                        metrics = ['mae'],
+                        summary_flag = False):
     """
     create_neural_net creates an instance of the Sequential class of Keras,
     creating a Neural Network with variable hidden layers, each with 32 nodes,
@@ -119,11 +119,15 @@ def training(features, targets, model, epochs, **kwargs):
 
     # Optional kwargs
     n_splits = kwargs.get('n_splits', 5)
+    group = kwargs.get('group', None)
     hist_flag = kwargs.get('hist_flag', False)
     plot_flag = kwargs.get('plot_flag', False)
     # Renaming data
     x = features
     y = targets
+
+    # Defining a boolean value if experimental and control groups are separated
+    isgroup = np.any(group)
 
     # Standardization of features
     scaler = StandardScaler()
@@ -144,7 +148,10 @@ def training(features, targets, model, epochs, **kwargs):
         figh, axh = plt.subplots(figsize=(10,8))
 
     if plot_flag:
-        figp, axp = plt.subplots(figsize=(10, 8))
+        if isgroup:
+            figp, (axp, axp_group) = plt.subplots(1, 2, figsize=(20, 8))
+        else:
+            figp, axp = plt.subplots(figsize=(10, 8))
 
     colormap = cmaps.get_cmap('tab20')
     colors = [colormap(i) for i in range(n_splits + 1)]
@@ -160,6 +167,8 @@ def training(features, targets, model, epochs, **kwargs):
         # Split data into training and testing sets
         x_train, x_test = x[train_index], x[test_index]
         y_train, y_test = y[train_index], y[test_index]
+        if isgroup:
+            group_test = group[test_index]
 
         # Standandization (after the split)
         x_train = scaler.fit_transform(x_train)
@@ -195,8 +204,20 @@ def training(features, targets, model, epochs, **kwargs):
 
         # Plotting actual vs. predicted values for current fold
         if plot_flag:
-            axp.scatter(y_test, y_pred, alpha=0.5, color = colors[i],
-                         label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+            axp.scatter(y_test, y_pred,
+                        alpha=0.5,
+                        color = colors[i],
+                        label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+            if isgroup:
+                y_test_exp = y_test[group_test == 1]
+                y_pred_exp = y_pred[group_test == 1]
+                y_test_control = y_test[group_test == -1]
+                y_pred_control = y_pred[group_test == -1]
+                axp_group.scatter(y_test_exp, y_pred_exp,color = 'k')
+                axp_group.scatter(y_test_control, y_pred_control, color = 'r')
+                
+
+
 
     if hist_flag:
         axh.set_xlabel("epoch")
@@ -221,12 +242,20 @@ def training(features, targets, model, epochs, **kwargs):
         # Setting plot labels and title
         axp.set_xlabel('Actual')
         axp.set_ylabel('Predicted')
-        axp.set_title('Actual vs. predicted age')
+        axp.set_title(f'Actual vs. predicted age - {n_splits} folds')
 
-        # Adding legend and grid to the plot
-        figp.legend()
+        # Adding legend and grid to the plots
+        figp.legend(loc = 'upper left')
         axp.grid(True)
-
+        if isgroup:
+            axp_group.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+            axp_group.set_xlabel('Actual')
+            axp_group.set_ylabel('Predicted')
+            axp_group.set_title(f'Actual vs. predicted age - exp. vs. control')
+            axp_group.grid(True)
+            exp_legend = axp_group.scatter([], [], marker = 'o', color = 'k', label = 'exp.')
+            control_legend = axp_group.scatter([], [], marker = 'o', color = 'r', label = 'control')
+            figp.legend(handles = [exp_legend, control_legend], loc='upper right')
     else:
         logger.info("Skipping the plot of actual vs predicted age ")
 
@@ -243,7 +272,7 @@ def neural_net_parsing():
     parser.add_argument("filename",
                          help="Name of the file that has to be analized")
     parser.add_argument("--target", default = "AGE_AT_SCAN",
-                        help="Name of the colums holding target values")
+                        help="Name of the column holding target values")
     parser.add_argument("--location",
                          help="Location of the file, i.e. folder containing it")
     parser.add_argument("--hidden_layers", type = int, default = 1,
@@ -262,6 +291,12 @@ def neural_net_parsing():
                          help="Show the history of the training")
     parser.add_argument("--plot", action="store_true",
                          help="Show the plot of actual vs predicted brain age")
+    parser.add_argument("--group", default = 'DX_GROUP',
+                        help="Name of the column indicating the group (experimental vs control)")
+    parser.add_argument("--overs", action = 'store_true', default = True,
+                        help="Oversampling, done in order to have a flat distribution of targets (default = True).")
+    parser.add_argument("--bins", type = int, default = 10,
+                        help="Number of bins in resampling (default 0 20)")
     parser.add_argument("--grid", action = "store_true",
                         help="Grid search for hyperparameter optimization")
 
@@ -271,7 +306,9 @@ def neural_net_parsing():
         args.filename = abs_path(args.filename,
                                         args.location) if args.location else args.filename
         logger.info(f"Opening file : {args.filename}")
-        features, targets = get_data(args.filename, args.target, args.ex_cols)
+        features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_name = args.group)
+        if args.overs:
+            features, targets, group = oversampling(features, targets, group=group)
         epochs = args.epochs
         input_shape = np.shape(features[0])
         if not args.grid:
@@ -284,6 +321,7 @@ def neural_net_parsing():
                         model,
                         epochs,
                         n_splits = args.folds,
+                        group = group,
                         hist_flag = args.history,
                         plot_flag = args.plot)
         else: # args.grid 
@@ -317,15 +355,19 @@ def neural_net_parsing():
             for mean, std, param in zip(means, stds, params):
                 logger.info(f"{mean} ({std}) with: {param}")
             model = create_neural_net(input_shape,
-                                        num_hidden_layers = grid_result.best_params_["model__num_hidden_layers"],
-                                        num_hidden_layer_nodes = grid_result.best_params_["model__num_hidden_nodes"],
-                                        optimizer= grid_result.best_params_["model__optimizer"],
+                                        num_hidden_layers =
+                                        grid_result.best_params_["model__num_hidden_layers"],
+                                        num_hidden_layer_nodes 
+                                        = grid_result.best_params_["model__num_hidden_nodes"],
+                                        optimizer =
+                                        grid_result.best_params_["model__optimizer"],
                                         summary_flag = args.summary)
             training(features,
                         targets,
                         model,
                         epochs,
                         n_splits = args.folds,
+                        group = group,
                         hist_flag = args.history,
                         plot_flag = args.plot)
     except FileNotFoundError:

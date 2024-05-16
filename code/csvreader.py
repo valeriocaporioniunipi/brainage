@@ -32,10 +32,9 @@ def csv_reader(csv_file, column_name=None, show_flag=False):
             print(df[column_name])
         return np.array(df[column_name].values)
 
-def get_data(filename, target_name, ex_cols = 0):
+def get_data(filename, target_name, ex_cols = 0, **kwargs):
     """
     get_data obtains the features and target arrays
-
     :param filename: path to the CSV file with the data
     :type filename: str
     :param target_name: optional (default = None): name of the column of the csv file that contains targets
@@ -44,18 +43,60 @@ def get_data(filename, target_name, ex_cols = 0):
     :type ex_cols: int
     :return: numpy arrays of features and target
     :rtype: numpy.ndarray, numpy.array
-
     """
+    group_name = kwargs.get('group_name', None)
     logger.info(f'Reading data from file {os.path.basename(filename)}, with {target_name} as target column ')
     features = csv_reader(filename)[:, ex_cols:]
     targets = csv_reader(filename, target_name)
-
     # Checking if the first dimension of features matches the length of targets
     if len(features) != len(targets):
         logger.error("Number of samples in features and targets do not match")
-    
-    return features, targets
+    if group_name:
+        group = csv_reader(filename, group_name)
+        return features, targets, group
+    else:
+        return features, targets
 
+def oversampling(features, targets, **kwargs):
+    # Extract optional parameters
+    bins = kwargs.get('bins', 10)
+    group = kwargs.get('group', None)
+    
+    # Calculate target histogram
+    hist, edges = np.histogram(targets, bins=bins)
+    
+    # Find the bin with the maximum count
+    max_bin_index = np.argmax(hist)
+    max_count = hist[max_bin_index]
+
+    # Check if the bin with the maximum count has samples available
+    if max_count == 0:
+        raise ValueError("No samples available in the bin with the maximum count for oversampling. Adjust bin size or provide more data.")
+
+    # Oversample the minority classes to match the maximum count
+    oversampled_features = []
+    oversampled_targets = []
+    oversampled_group = [] if group is not None else None
+
+    for i in range(bins - 1):
+        # Find indices of samples within the current bin
+        bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
+        
+        # Randomly sample with replacement from the indices to match max_count
+        sampled_indices = np.random.choice(bin_indices, size=max_count, replace=True)
+        
+        # Append the sampled features and targets to the oversampled lists
+        oversampled_features.append(features[sampled_indices])
+        oversampled_targets.append(targets[sampled_indices])
+        if group is not None:
+            oversampled_group.append(group[sampled_indices])
+
+    # Concatenate the oversampled features and targets
+    new_features = np.concatenate(oversampled_features)
+    new_targets = np.concatenate(oversampled_targets)
+    new_group = np.concatenate(oversampled_group) if group is not None else None
+
+    return new_features, new_targets, new_group if group is not None else (new_features, new_targets)
 
 def csv_reader_parsing():
 
