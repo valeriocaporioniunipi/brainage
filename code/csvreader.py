@@ -83,7 +83,8 @@ def oversampling(features, targets, **kwargs):
         bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
         
         # Randomly sample with replacement from the indices to match max_count
-        sampled_indices = np.random.choice(bin_indices, size=max_count, replace=True)
+        size = max_count
+        sampled_indices = np.random.choice(bin_indices, size=size, replace=True)
         
         # Append the sampled features and targets to the oversampled lists
         oversampled_features.append(features[sampled_indices])

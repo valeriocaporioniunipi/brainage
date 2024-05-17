@@ -25,13 +25,15 @@ def create_neural_net(input_shape,
                         summary_flag = False):
     """
     create_neural_net creates an instance of the Sequential class of Keras,
-    creating a Neural Network with variable hidden layers, each with 32 nodes,
-    and setting the initial weights at random values.
+    creating a Neural Network with variable hidden layers, each with variable
+    number of nodes, and setting the initial weights at random values.
 
     :param input_shape: shape of the data given to the input layer of the NN
     :type input_shape: tuple
     :param num_hidden_layers: number of hidden layers in the network
     :type num_hidden_layers: int
+    :param num_hidden_layer_nodes: number of nodes in each hidden layer
+    :type num_hidden_layer_nodes: int
     :param optimizer: optional (default = 'adam'): Optimizer to use
     :type optimizer: str
     :param metrics: optional (default = ['mae']): List of metrics to use
@@ -42,7 +44,7 @@ def create_neural_net(input_shape,
     :rntype: SequentialType
     """
     
-    # Defining the model
+    # Defining the model and placing an input layer
     model = Sequential()
     model.add(layers.Input(shape=input_shape))
 
@@ -50,7 +52,7 @@ def create_neural_net(input_shape,
     for _ in range(num_hidden_layers):
         model.add(layers.Dense(num_hidden_layer_nodes, activation='relu'))
 
-    model.add(layers.Dense(1, activation='linear'))  # Output layer
+    model.add(layers.Dense(1, activation='linear'))  # Output layer of a regression problem
 
     # Compiling the model
     model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
@@ -69,19 +71,20 @@ def build_model(input_shape,
                 optimizer='adam',
                 **kwargs):
     """
-    Wrapper function to create a Keras model with specified hyperparameters
+    build_model is a wrapper function used to create a Keras model with specified hyperparameters
     Non so bene che scrivere qui
     """
-    return create_neural_net(input_shape, num_hidden_layers, optimizer)
+    return create_neural_net(input_shape, num_hidden_layers, num_hidden_layer_nodes, optimizer)
 
 
 def training(features, targets, model, epochs, **kwargs):
     """"
-    training function trains a neural network with k-folding. As input the function needs a matrix 
-    containing features and a target array with the feature under exam. Is necessary a neural network model 
-    and to specify number of epochs. Other arguments are possible and are listed below. The basic
-    output is the printing of MAE, MSE, R. It can shows also Actual vs Predicted brain age scatter plot and 
-    Training history plot
+    training trains a neural network with k-folding. As input, the function takes a matrix 
+    containing features and a target array with the value under exam: age in our case.
+    Specifying the neural network model and number of epochs is needed. Keyword arguments
+    are listed below. The basic output is the printing of MAE, MSE, R.
+    The function can also show actual vs predicted brain age scatter plot and 
+    training history plot
 
     :param features: matrix of features
     :type features: ndarray
@@ -93,30 +96,28 @@ def training(features, targets, model, epochs, **kwargs):
     :type epochs: int
     :param n_splits: optional (default = 5): number of folds for cross-validation
     :type n_splits: int
+    :param bins: optional (default = 10): number of age bins for oversampling
+    :type bins: int
     :param hist_flag: optional (default = False). Plot a graph showing val_loss
         (labeled as validation) vs loss (labeled as training) during epochs.
     :type hist_flag: bool
     :param plot_flag: optional (default = False). 
         Show the plot of actual vs predicted brain age.
     :type plot_flag: bool
-    :return: a matrix whose columns are array holding MAE, MSE and R-squared, averaged among the folds
+    :return: array holding MAE, MSE and R-squared, averaged among the folds
     :rntype: ndarray
-
-
-
     """
 
     # Optional kwargs
     n_splits = kwargs.get('n_splits', 5)
     group = kwargs.get('group', None)
+    bins = kwargs.get('bins', 10)
     hist_flag = kwargs.get('hist_flag', False)
     plot_flag = kwargs.get('plot_flag', False)
+    overs_flag = kwargs.get('overs_flag', False)
     # Renaming data
     x = features
     y = targets
-
-    # Defining a boolean value if experimental and control groups are separated
-    isgroup = np.any(group)
 
     # Standardization of features
     scaler = StandardScaler()
@@ -137,7 +138,7 @@ def training(features, targets, model, epochs, **kwargs):
         figh, axh = plt.subplots(figsize=(10,8))
 
     if plot_flag:
-        if isgroup:
+        if group is not None:
             figp, (axp, axp_group) = plt.subplots(1, 2, figsize=(20, 8))
         else:
             figp, axp = plt.subplots(figsize=(10, 8))
@@ -156,17 +157,26 @@ def training(features, targets, model, epochs, **kwargs):
         # Split data into training and testing sets
         x_train, x_test = x[train_index], x[test_index]
         y_train, y_test = y[train_index], y[test_index]
-        if isgroup:
+        if group is not None:
             group_test = group[test_index]
 
         # Standandization (after the split)
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
 
+        # Oversampling
+        if overs_flag:
+            logger.info(f'Performing oversampling with {bins} bins')
+            x_train, y_train, _ = oversampling(x_train, y_train, bins = bins)
+
         # Training the model (after having re-initialized the weights)
         model.set_weights(initial_weights)
         logger.info(f"Training the model with dataset {i}/{n_splits} for {epochs} epochs ")
-        history = model.fit(x_train, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
+        history = model.fit(x_train, y_train, epochs=epochs,
+                            batch_size=32,
+                            validation_split=0.1,
+                            verbose = 0)
+        logger.info('Training successfully ended ')
 
         # Predict on the test set
         y_pred = model.predict(x_test)
@@ -197,7 +207,7 @@ def training(features, targets, model, epochs, **kwargs):
                         alpha=0.5,
                         color = colors[i],
                         label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
-            if isgroup:
+            if group is not None:
                 y_test_exp = y_test[group_test == 1]
                 y_pred_exp = y_pred[group_test == 1]
                 y_test_control = y_test[group_test == -1]
@@ -229,18 +239,18 @@ def training(features, targets, model, epochs, **kwargs):
         axp.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
 
         # Setting plot labels and title
-        axp.set_xlabel('Actual')
-        axp.set_ylabel('Predicted')
+        axp.set_xlabel('Actual age [y]')
+        axp.set_ylabel('Predicted age [y]')
         axp.set_title(f'Actual vs. predicted age - {n_splits} folds')
 
         # Adding legend and grid to the plots
         figp.legend(loc = 'upper left')
         axp.grid(True)
-        if isgroup:
+        if group is not None:
             axp_group.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
-            axp_group.set_xlabel('Actual')
-            axp_group.set_ylabel('Predicted')
-            axp_group.set_title(f'Actual vs. predicted age - exp. vs. control')
+            axp_group.set_xlabel('Actual age [y]')
+            axp_group.set_ylabel('Predicted age [y]')
+            axp_group.set_title('Actual vs. predicted age - exp. vs. control')
             axp_group.grid(True)
             exp_legend = axp_group.scatter([], [], marker = 'o', color = 'k', label = 'exp.')
             control_legend = axp_group.scatter([], [], marker = 'o', color = 'r', label = 'control')
@@ -253,14 +263,20 @@ def training(features, targets, model, epochs, **kwargs):
 
 def neural_net_parsing():
     """
-    Parsing from terminal
+    neural_net_parsing executes the parsing from terminal
 
-    The parameters listed below are not parameters of the functions but are parsing arguments that have 
-    to be passed to command line when executing the program as follow:
+    The parameters listed below are not parameters of the functions, but are parsing arguments
+    to be used in terminal, when executing the program as follows:
 
     .. code::
 
-        $Your_PC>python neural_net.py file.csv --folds 7 --ex_cols 4 --plot  
+        $Your_PC>python neural_net.py file.csv --folds 7 --ex_cols 4 --plot 
+
+    In order to read a description of every argument, execute:
+
+    .. code::
+
+        $Your_PC>python neural_net.py --help
 
 
     :param filename: Name of the file that has to be analized
@@ -316,8 +332,9 @@ def neural_net_parsing():
                          help="Show the plot of actual vs predicted brain age")
     parser.add_argument("--group", default = 'DX_GROUP',
                         help="Name of the column indicating the group (experimental vs control)")
-    parser.add_argument("--overs", action = 'store_true', default = True,
-                        help="Oversampling, done in order to have a flat distribution of targets (default = True).")
+    parser.add_argument("--overs", action = 'store_true', default = False,
+                        help="Oversampling, done in order to have"
+                        "a flat distribution of targets (default = True).")
     parser.add_argument("--bins", type = int, default = 10,
                         help="Number of bins in resampling (default 0 20)")
     parser.add_argument("--grid", action = "store_true",
@@ -329,9 +346,10 @@ def neural_net_parsing():
         args.filename = abs_path(args.filename,
                                         args.location) if args.location else args.filename
         logger.info(f"Opening file : {args.filename}")
-        features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_name = args.group)
-        if args.overs:
-            features, targets, group = oversampling(features, targets, group=group)
+        features, targets, group = get_data(args.filename,
+                                            args.target,
+                                            args.ex_cols,
+                                            group_name = args.group)
         epochs = args.epochs
         input_shape = np.shape(features[0])
         if not args.grid:
@@ -344,7 +362,9 @@ def neural_net_parsing():
                         model,
                         epochs,
                         n_splits = args.folds,
+                        bins = args.bins,
                         group = group,
+                        overs_flag = args.overs,
                         hist_flag = args.history,
                         plot_flag = args.plot)
         else: # args.grid 
@@ -354,7 +374,8 @@ def neural_net_parsing():
             'model__optimizer': ['adam', 'sgd', 'rmsprop']
             }
 
-            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape, **kwargs),
+            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape,
+                                                                                **kwargs),
                                             epochs=epochs,
                                             batch_size=32,
                                             verbose=0)
@@ -370,7 +391,7 @@ def neural_net_parsing():
             logger.info("Starting Grid Search for hyperparameter optimization")
             grid_result = grid.fit(x_scaled, targets)
 
-            # Summarize results
+            # Summarizing results
             logger.info(f"Best: {grid_result.best_score_} using {grid_result.best_params_}")
             means = grid_result.cv_results_['mean_test_score']
             stds = grid_result.cv_results_['std_test_score']
@@ -390,7 +411,9 @@ def neural_net_parsing():
                         model,
                         epochs,
                         n_splits = args.folds,
+                        bins = args.bins,
                         group = group,
+                        overs_flag = args.overs,
                         hist_flag = args.history,
                         plot_flag = args.plot)
     except FileNotFoundError:
