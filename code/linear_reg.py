@@ -9,8 +9,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from abspath import abs_path
-from csvreader import get_data
+from utils import abs_path, get_data
 
 def linear_reg(features, target, n_splits, plot_flag=False):
 

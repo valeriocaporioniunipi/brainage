@@ -1,5 +1,5 @@
-import numpy as np
 import argparse
+import numpy as np
 from loguru import logger
 import matplotlib.pyplot as plt
 

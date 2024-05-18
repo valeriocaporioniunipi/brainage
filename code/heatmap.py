@@ -10,7 +10,7 @@ from keras import Sequential
 from keras import layers
 
 # Importing custom functions
-from csvreader import csv_reader, get_data
+from utils import csv_reader, get_data
 
 # Load and preprocess the data
 filename = '/Users/valeriocaporioni/Documents/cmepda/brainage/data/FS_features_ABIDE_males.csv'
