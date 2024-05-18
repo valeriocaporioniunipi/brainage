@@ -14,14 +14,13 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from scikeras.wrappers import KerasRegressor
 
-from abspath import abs_path
-from csvreader import get_data, oversampling
+from utils import abs_path, get_data, oversampling
 
 def create_reg_nn(input_shape,
                   hidden_layers = 1,
-                  hidden_nodes = 32,
+                  hidden_nodes = 48,
                   optimizer = 'rmsprop',
-                  dropout = 0.0,
+                  dropout = 0.05,
                   summary_flag = False):
     """
     Create a neural network model using Keras in order to solve a regression problem.
@@ -34,6 +33,8 @@ def create_reg_nn(input_shape,
     :type hidden_nodes: int
     :param optimizer: Optimizer to use
     :type optimizer: str
+    :param dropout: Dropout rate of dropout layer
+    :type dropout: float
     :param summary_flag: Show the summary of the model
     :type summary_flag: bool
     :return: Neural Network model
@@ -63,13 +64,6 @@ def create_reg_nn(input_shape,
     else:
         logger.info(f"Model successfully compiled with {hidden_layers} hidden layers")
     return model
-
-def build_model(*args):
-    """
-    build_model is used to create a Keras model with specified hyperparameters
-    """
-    return create_reg_nn(*args)
-
 
 def training(features, targets, model, epochs, **kwargs):
     """"
