@@ -8,8 +8,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
-from abspath import abs_path
-from csvreader import get_data
+from utils import abs_path, get_data
 
 def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
     """

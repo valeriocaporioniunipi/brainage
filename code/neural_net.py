@@ -2,11 +2,11 @@
 Module neural_net trains neural networks in order to guess age from brain features
 """
 import argparse
+
 import numpy as np
 from loguru import logger
 from matplotlib import pyplot as plt
 from matplotlib import colormaps as cmaps
-
 from keras import Sequential
 from keras import layers
 from sklearn.model_selection import KFold, GridSearchCV
@@ -17,95 +17,85 @@ from scikeras.wrappers import KerasRegressor
 from abspath import abs_path
 from csvreader import get_data, oversampling
 
-def create_neural_net(input_shape,
-                        num_hidden_layers = 1,
-                        num_hidden_layer_nodes = 32,
-                        optimizer = 'adam',
-                        metrics = ['mae'],
-                        summary_flag = False):
+def create_reg_nn(input_shape,
+                  hidden_layers = 1,
+                  hidden_nodes = 32,
+                  optimizer = 'rmsprop',
+                  dropout = 0.0,
+                  summary_flag = False):
     """
-    create_neural_net creates an instance of the Sequential class of Keras,
-    creating a Neural Network with variable hidden layers, each with variable
-    number of nodes, and setting the initial weights at random values.
+    Create a neural network model using Keras in order to solve a regression problem.
 
-    :param input_shape: shape of the data given to the input layer of the NN
+    :param input_shape: Shape of the data given to the input layer of the NN
     :type input_shape: tuple
-    :param num_hidden_layers: number of hidden layers in the network
-    :type num_hidden_layers: int
-    :param num_hidden_layer_nodes: number of nodes in each hidden layer
-    :type num_hidden_layer_nodes: int
-    :param optimizer: optional (default = 'adam'): Optimizer to use
+    :param hidden_layers: Number of hidden layers in the network
+    :type hidden_layers: int
+    :param hidden_nodes: Number of nodes in each hidden layer
+    :type hidden_nodes: int
+    :param optimizer: Optimizer to use
     :type optimizer: str
-    :param metrics: optional (default = ['mae']): List of metrics to use
-    :type metrics: list
-    :param summary_flag: optional (default = False): Show the summary of the NN
-    :type summary_flag: Bool
+    :param summary_flag: Show the summary of the model
+    :type summary_flag: bool
     :return: Neural Network model
-    :rntype: SequentialType
+    :rtype: Sequential
     """
-    
-    # Defining the model and placing an input layer
-    model = Sequential()
-    model.add(layers.Input(shape=input_shape))
+
+    model = Sequential() # Defining the model
+    model.add(layers.Input(shape=input_shape)) # Placing an input layer
+    model.add(layers.Dropout(dropout))
+    model.add(layers.BatchNormalization())
 
     # Adding variable number of hidden layers
-    for _ in range(num_hidden_layers):
-        model.add(layers.Dense(num_hidden_layer_nodes, activation='relu'))
+    for _ in range(hidden_layers):
+        model.add(layers.Dense(hidden_nodes, activation='relu'))
+        model.add(layers.Dropout(dropout))
+        model.add(layers.BatchNormalization())
 
     model.add(layers.Dense(1, activation='linear'))  # Output layer of a regression problem
 
     # Compiling the model
-    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=metrics)
+    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mae'])
 
-    # Printing the summary, if specified
+    # Printing summary, if specified
     if summary_flag:
         logger.info("Model successfully compiled, showing detailed summary ")
         model.summary()
     else:
-        logger.info(f"Model successfully compiled with {num_hidden_layers} hidden layers")
+        logger.info(f"Model successfully compiled with {hidden_layers} hidden layers")
     return model
 
-def build_model(input_shape,
-                num_hidden_layers=1,
-                num_hidden_layer_nodes = 32,
-                optimizer='adam',
-                **kwargs):
+def build_model(*args):
     """
-    build_model is a wrapper function used to create a Keras model with specified hyperparameters
-    Non so bene che scrivere qui
+    build_model is used to create a Keras model with specified hyperparameters
     """
-    return create_neural_net(input_shape, num_hidden_layers, num_hidden_layer_nodes, optimizer)
+    return create_reg_nn(*args)
 
 
 def training(features, targets, model, epochs, **kwargs):
     """"
-    training trains a neural network with k-folding. As input, the function takes a matrix 
-    containing features and a target array with the value under exam: age in our case.
-    Specifying the neural network model and number of epochs is needed. Keyword arguments
-    are listed below. The basic output is the printing of MAE, MSE, R.
-    The function can also show actual vs predicted brain age scatter plot and 
-    training history plot
+    Train a neural network using k-fold cross-validation.
+    The function can show actual vs predicted brain age scatter plot and training history plot.
 
-    :param features: matrix of features
+    :param features: Matrix of features
     :type features: ndarray
-    :param targets: array of targets
+    :param targets: Array of target values
     :type targets: array
-    :param model: NN model, instance of Sequential class
-    :type model: SequentialType
-    :param epochs: number of epochs during neural network training
+    :param model: Neural network model
+    :type model: Sequential
+    :param epochs: Number of epochs for training
     :type epochs: int
-    :param n_splits: optional (default = 5): number of folds for cross-validation
-    :type n_splits: int
-    :param bins: optional (default = 10): number of age bins for oversampling
-    :type bins: int
-    :param hist_flag: optional (default = False). Plot a graph showing val_loss
-        (labeled as validation) vs loss (labeled as training) during epochs.
-    :type hist_flag: bool
-    :param plot_flag: optional (default = False). 
-        Show the plot of actual vs predicted brain age.
-    :type plot_flag: bool
-    :return: array holding MAE, MSE and R-squared, averaged among the folds
-    :rntype: ndarray
+    :param kwargs: Additional keyword arguments
+        - n_splits (int, optional): Number of folds for cross-validation. Defaults to 5.
+        - group (array, optional): Group information for stratified sampling. Defaults to None.
+        - bins (int, optional): Number of bins for oversampling. Defaults to 10.
+        - hist_flag (bool, optional): Plot training history. Defaults to False.
+        - plot_flag (bool, optional): Plot actual vs predicted values. Defaults to False.
+        - overs_flag (bool, optional): Perform oversampling. Defaults to False.
+
+    :return: Array holding mean absolute error, mean squared error, and R-squared scores
+    :rtype: ndarray
+    :return: List holding the n-splits models obtained after training
+    :rtype: list
     """
 
     # Optional kwargs
@@ -115,9 +105,6 @@ def training(features, targets, model, epochs, **kwargs):
     hist_flag = kwargs.get('hist_flag', False)
     plot_flag = kwargs.get('plot_flag', False)
     overs_flag = kwargs.get('overs_flag', False)
-    # Renaming data
-    x = features
-    y = targets
 
     # Standardization of features
     scaler = StandardScaler()
@@ -129,9 +116,7 @@ def training(features, targets, model, epochs, **kwargs):
     kf = KFold(n_splits=n_splits, shuffle = True)
 
     # Initialization of lists to store evaluation metrics
-    mae_scores = []
-    mse_scores = []
-    r2_scores = []
+    mae_scores, mse_scores, r2_scores = [], [], []
 
     # Initializing figures for plotting and creating rlated colours
     if hist_flag:
@@ -153,10 +138,10 @@ def training(features, targets, model, epochs, **kwargs):
     models =[]
 
     # Perform k-fold cross-validation
-    for i, (train_index, test_index) in enumerate(kf.split(x), 1):
-        # Split data into training and testing sets
-        x_train, x_test = x[train_index], x[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+    for i, (train_index, test_index) in enumerate(kf.split(features), 1):
+        # Splitting data into training and testing sets
+        x_train, x_test = features[train_index], features[test_index]
+        y_train, y_test = targets[train_index], targets[test_index]
         if group is not None:
             group_test = group[test_index]
 
@@ -169,7 +154,7 @@ def training(features, targets, model, epochs, **kwargs):
             logger.info(f'Performing oversampling with {bins} bins')
             x_train, y_train, _ = oversampling(x_train, y_train, bins = bins)
 
-        # Training the model (after having re-initialized the weights)
+        # Training the model (after having properly re-initialized the weights)
         model.set_weights(initial_weights)
         logger.info(f"Training the model with dataset {i}/{n_splits} for {epochs} epochs ")
         history = model.fit(x_train, y_train, epochs=epochs,
@@ -190,7 +175,6 @@ def training(features, targets, model, epochs, **kwargs):
             training_loss = history.history['loss']
             axh.plot(training_loss, label=f"Tr. {i}", color = colors[i])
             axh.plot(validation_loss, label=f"Val. {i}", color = colors[i], ls = 'dashed')
-            axh.set_yscale('log')
 
         # Evaluating the model
         mae = mean_absolute_error(y_test, y_pred)
@@ -214,16 +198,13 @@ def training(features, targets, model, epochs, **kwargs):
                 y_pred_control = y_pred[group_test == -1]
                 axp_group.scatter(y_test_exp, y_pred_exp,color = 'k')
                 axp_group.scatter(y_test_control, y_pred_control, color = 'r')
-                
-
-
 
     if hist_flag:
         axh.set_xlabel("epoch")
         axh.set_ylabel("loss")
         axh.set_title(f'History losses in {epochs} epochs')
+        axh.set_yscale('log')
         figh.legend()
-
     else:
         logger.info("Skipping the plot of training history ")
 
@@ -235,8 +216,9 @@ def training(features, targets, model, epochs, **kwargs):
     scores = np.array([np.mean(mae_scores), np.mean(mse_scores), np.mean(r2_scores)])
 
     if plot_flag:
+        target_range = [targets.min(), targets.max()]
         # Plotting the ideal line (y=x)
-        axp.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+        axp.plot(target_range, target_range, 'k--', lw=2)
 
         # Setting plot labels and title
         axp.set_xlabel('Actual age [y]')
@@ -247,7 +229,7 @@ def training(features, targets, model, epochs, **kwargs):
         figp.legend(loc = 'upper left')
         axp.grid(True)
         if group is not None:
-            axp_group.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2)
+            axp_group.plot(target_range, target_range, 'k--', lw=2)
             axp_group.set_xlabel('Actual age [y]')
             axp_group.set_ylabel('Predicted age [y]')
             axp_group.set_title('Actual vs. predicted age - exp. vs. control')
@@ -259,7 +241,7 @@ def training(features, targets, model, epochs, **kwargs):
         logger.info("Skipping the plot of actual vs predicted age ")
 
     plt.show()
-    return scores
+    return scores, models
 
 def neural_net_parsing():
     """
@@ -320,6 +302,8 @@ def neural_net_parsing():
                          help="Number of hidden layer nodes in the neural network")
     parser.add_argument("--epochs", type = int, default = 50,
                          help="Number of epochs of training (default 50)")
+    parser.add_argument("--opt", default= "rmsprop",
+                         help="Optimizer (default = 'rmsprop')")
     parser.add_argument("--folds", type = int, default = 5,
                          help="Number of folds in the k-folding (>4, default 5)")
     parser.add_argument("--ex_cols", type = int, default = 3,
@@ -353,9 +337,10 @@ def neural_net_parsing():
         epochs = args.epochs
         input_shape = np.shape(features[0])
         if not args.grid:
-            model = create_neural_net(input_shape,
-                                        num_hidden_layers = args.hidden_layers,
-                                        num_hidden_layer_nodes = args.hidden_nodes,
+            model = create_reg_nn(input_shape,
+                                        hidden_layers = args.hidden_layers,
+                                        hidden_nodes = args.hidden_nodes,
+                                        optimizer = args.opt,
                                         summary_flag = args.summary)
             training(features,
                         targets,
@@ -367,15 +352,21 @@ def neural_net_parsing():
                         overs_flag = args.overs,
                         hist_flag = args.history,
                         plot_flag = args.plot)
-        else: # args.grid 
+        else:# args.grid
             param_grid = {
-            'model__num_hidden_layers': [1, 4, 6],
-            'model__num_hidden_nodes' : [32, 48],
-            'model__optimizer': ['adam', 'sgd', 'rmsprop']
+            'model__hidden_layers': [1, 2, 4],
+            'model__hidden_nodes' : [32, 48],
+            'model__optimizer': ['adam', 'adagrad', 'rmsprop'],
+            'model__dropout': [0.0, 0.01, 0.05]
             }
 
-            keras_regressor = KerasRegressor(model=lambda **kwargs: build_model(input_shape,
-                                                                                **kwargs),
+            keras_regressor = KerasRegressor(model=lambda hidden_layers,
+                                            hidden_nodes, dropout, optimizer:
+                                            create_reg_nn( input_shape,
+                                            hidden_layers=hidden_layers,
+                                            hidden_nodes=hidden_nodes,
+                                            dropout=dropout,
+                                            optimizer=optimizer),
                                             epochs=epochs,
                                             batch_size=32,
                                             verbose=0)
@@ -398,13 +389,15 @@ def neural_net_parsing():
             params = grid_result.cv_results_['params']
             for mean, std, param in zip(means, stds, params):
                 logger.info(f"{mean} ({std}) with: {param}")
-            model = create_neural_net(input_shape,
-                                        num_hidden_layers =
-                                        grid_result.best_params_["model__num_hidden_layers"],
-                                        num_hidden_layer_nodes 
-                                        = grid_result.best_params_["model__num_hidden_nodes"],
+            model = create_reg_nn(input_shape,
+                                        hidden_layers =
+                                        grid_result.best_params_["model__hidden_layers"],
+                                        hidden_nodes
+                                        = grid_result.best_params_["model__hidden_nodes"],
                                         optimizer =
                                         grid_result.best_params_["model__optimizer"],
+                                        dropout = 
+                                        grid_result.best_params_['model__dropout'],
                                         summary_flag = args.summary)
             training(features,
                         targets,
