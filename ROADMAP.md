@@ -15,4 +15,5 @@ Example paper: Cole et al., Predicting brain age with deep learning from raw ima
   - [ ] Update dependencies (automatic make html, requirements)
   - [ ] Unit testing
   - [ ] Autistic vs non-autistic datasets
+  - [ ] Slides
 
