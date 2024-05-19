@@ -300,6 +300,8 @@ def neural_net_parsing():
                          help="Optimizer (default = 'rmsprop')")
     parser.add_argument("--folds", type = int, default = 5,
                          help="Number of folds in the k-folding (>4, default 5)")
+    parser.add_argument("--dropout", type = float, default = 0.05,
+                         help="Dropout rate in the NN (default 0.05)")
     parser.add_argument("--ex_cols", type = int, default = 3,
                          help="Number of columns excluded when importing (default 3)")
     parser.add_argument("--summary", action="store_true",
@@ -315,6 +317,8 @@ def neural_net_parsing():
                         "a flat distribution of targets (default = True).")
     parser.add_argument("--bins", type = int, default = 10,
                         help="Number of bins in resampling (default 0 20)")
+    parser.add_argument("--harm",
+                        help="Name of the column of sites, used for data harmonization")
     parser.add_argument("--grid", action = "store_true",
                         help="Grid search for hyperparameter optimization")
 
@@ -327,13 +331,15 @@ def neural_net_parsing():
         features, targets, group = get_data(args.filename,
                                             args.target,
                                             args.ex_cols,
-                                            group_name = args.group)
+                                            group_col = args.group, 
+                                            site_col = args.harm)
         epochs = args.epochs
         input_shape = np.shape(features[0])
         if not args.grid:
             model = create_reg_nn(input_shape,
                                         hidden_layers = args.hidden_layers,
                                         hidden_nodes = args.hidden_nodes,
+                                        dropout = args.dropout,
                                         optimizer = args.opt,
                                         summary_flag = args.summary)
             training(features,

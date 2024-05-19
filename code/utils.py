@@ -3,10 +3,12 @@ import argparse
 import numpy as np
 import pandas as pd
 from loguru import logger
+from neuroHarmonize import harmonizationLearn, harmonizationApply
+
 
 def abs_path(local_filename, data_folder):
     """
-    abs_path gets the absolute path of the file given the name of the folder containing the data
+    Gets the absolute path of the file given the name of the folder containing the data
     and the name of the file inside that folder and assuming that the repository contains a data folder
     and a code folder.
 
@@ -40,47 +42,87 @@ def csv_reader(filename, column_name=None, show_flag=False):
     :type column_name: str, optional
     :param show_flag: If True, displays the dataframe
     :type show_flag: bool, optional
-    :return: A NumPy array of the entire dataset or the specified column
-    :rtype: numpy.ndarray
+    :return: A Pandas dataframe of the entire dataset or the specified column
+    :rtype: pandas.df
     """
     df = pd.read_csv(filename, delimiter=';')
     if column_name is None:
         if show_flag:
             print(df)
-        return df.values
+        return df
     else:
         if show_flag:
             print(df[column_name])
-        return df[column_name].values
+        return df[column_name]
 
-def get_data(filename, target_name, ex_cols=0, **kwargs):
+def handle_spurious(df):
     """
-    Obtains the features and target arrays from a CSV file.
+    Handles spurious zeroes and -9999 values in the DataFrame.
+    
+    :param df: Input DataFrame
+    :type df: pd.DataFrame
+    :return: Cleaned DataFrame with spurious values handled
+    :rtype: pd.DataFrame
+    """
+    # Replace -9999 with NaN
+    df.replace(-9999, np.nan, inplace=True)
+    # Replace 0 with NaN
+    df.replace(0, np.nan, inplace=True)
+    # Fill NaN values with the mean of the respective columns
+    df.fillna(df.mean(), inplace=True)
+    return df
 
-    :param filename: Path to the CSV file
+
+def get_data(filename, target_col, ex_cols=0, **kwargs):
+    """
+    Obtains the features and target arrays from a CSV file. Optionally harmonizes the data 
+    using neuroHarmonize and includes additional columns for grouping.
+
+    :param filename: Path to the CSV file.
     :type filename: str
-    :param target_name: Name of the target column
-    :type target_name: str
-    :param ex_cols: Number of initial excluded columns (default is 0)
+    :param target_col: Name of the target column.
+    :type target_col: str
+    :param ex_cols: Number of initial columns to exclude from the features (default is 0).
     :type ex_cols: int, optional
-    :return: NumPy arrays of features, targets (and optionally group)
-    :rtype: tuple(numpy.ndarray, numpy.ndarray)
+    :param kwargs: Additional keyword arguments:
+                   - group_col: Name of the group column (optional).
+                   - site_col: Name of the site column for harmonization (optional).
+    :return: NumPy arrays of features, targets, and optionally the group.
+    :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
-    group_name = kwargs.get('group_name', None)
-    logger.info(f'Reading {os.path.basename(filename)}, with {target_name} as target column')
-    
-    features = csv_reader(filename)[:, ex_cols:]
-    targets = csv_reader(filename, target_name)
-    
-    if len(features) != len(targets):
-        logger.error("Number of samples in features and targets do not match")
-        raise ValueError("Mismatch between number of features and targets samples")
+    group_col = kwargs.get('group_col', None)
+    site_col = kwargs.get('site_col', None)
+    logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
+    # Importing data from csv file as data
+    data = pd.read_csv(filename, delimiter = ';')
+    # 
+    #if group_col is not None:
+    #    data = data[data[group_col] == -1]
 
-    if group_name:
-        group = csv_reader(filename, group_name)
+    # Excluding the first ex_cols columns
+    features_df = data.iloc[:, ex_cols:]
+    # Removing spurious values from features and convertin to numpy matrix
+    features = handle_spurious(features_df).values
+    # Target array (numpy.ndarray)
+    targets = data[target_col].values
+    if site_col in data.columns:
+        covars = data[[site_col]]
+        covars.loc[:, site_col] = covars[site_col].str.rsplit('_', n=1).str[0]
+        covars.rename(columns={site_col: 'SITE'}, inplace=True)  # Rename the column
+        _ , features = harmonizationLearn(features, covars)
+        logger.info('Harmonizing data with neuroHarmonize ')
+
+    if len(features) != len(targets):
+        logger.error("Number of samples in features and targets do not match ")
+        raise ValueError("Mismatch between number of features and targets samples")
+    if group_col:
+        logger.info(" Splitting into experimental "
+                    f"& control group. Group column has name {group_col}")
+        group = data[group_col].values
         return features, targets, group
     # implicit else
     return features, targets
+
 
 def oversampling(features, targets, **kwargs):
     """
