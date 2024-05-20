@@ -9,8 +9,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from abspath import abs_path
-from csvreader import get_data
+from code.abspath import abs_path
+from code.csvreader import get_data
 
 def linear_reg(features, target, n_splits, plot_flag=False):
 
@@ -73,9 +73,14 @@ def linear_reg(features, target, n_splits, plot_flag=False):
         plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
     # Print average evaluation metrics over all folds
-    print("Mean Absolute Error:", np.mean(mae_scores))
-    print("Mean Squared Error:", np.mean(mse_scores))
-    print("R-squared:", np.mean(r2_scores))
+
+    meaned_mae = np.mean(mae_scores)
+    meaned_mse = np.mean(mse_scores)
+    meaned_r2 = np.mean(r2_scores)
+
+    print("Mean Absolute Error:", meaned_mae)
+    print("Mean Squared Error:", meaned_mse)
+    print("R-squared:", meaned_r2)
 
     if plot_flag:
 
@@ -93,6 +98,9 @@ def linear_reg(features, target, n_splits, plot_flag=False):
 
         # Show the plot
         plt.show()
+    
+    return meaned_mae, meaned_mse, meaned_r2
+
 
 def linear_reg_parsing():
     """
