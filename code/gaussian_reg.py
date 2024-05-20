@@ -8,10 +8,10 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
-from abspath import abs_path
-from csvreader import get_data
+from code.abspath import abs_path
+from code.csvreader import get_data
 
-def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
+def gaussian_reg(features, target, n_splits,  plot_flag=False):
     """
     gaussian_reg performs gaussian regression with k-fold cross-validation on the
     given dataset and prints evaluation metrics of the gaussian regression model
@@ -28,8 +28,8 @@ def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
     """
     # Loading data...
     #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
-    x = get_data(filename)[:, ex_cols:] 
-    y = get_data(filename, "AGE_AT_SCAN")
+    x = features 
+    y = target
 
     # Standardize features
     scaler = StandardScaler()
@@ -72,9 +72,13 @@ def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
         plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
     # Print average evaluation metrics over all folds
-    print("Mean Absolute Error:", np.mean(mae_scores))
-    print("Mean Squared Error:", np.mean(mse_scores))
-    print("R-squared:", np.mean(r2_scores))
+    meaned_mae = np.mean(mae_scores)
+    meaned_mse = np.mean(mse_scores)
+    meaned_r2 = np.mean(r2_scores)
+
+    print("Mean Absolute Error:", meaned_mae)
+    print("Mean Squared Error:", meaned_mse)
+    print("R-squared:", meaned_r2)
 
     if plot_flag:
 
@@ -93,6 +97,8 @@ def gaussian_reg(filename, n_splits, ex_cols=0,  plot_flag=False):
 
         # Show the plot
         plt.show()
+
+    return meaned_mae, meaned_mse, meaned_r2
 
 def gaussian_reg_parsing():
     """
@@ -153,12 +159,10 @@ def gaussian_reg_parsing():
 
     if args.folds > 4:
         try:
-            args.filename = abs_path(args.filename,
-                                          args.location) if args.location else args.filename
+            args.filename = abs_path(args.filename,args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
             features, targets = get_data(args.filename, args.target, args.ex_cols)
-            gaussian_reg(features, targets, args.epochs, args.folds,
-                       args.summary, args.history, args.plot)
+            gaussian_reg(features, targets, args.folds, args.plot)
         except FileNotFoundError:
             logger.error("File not found.")
     else:
