@@ -28,8 +28,7 @@ def linear_reg(features, target, n_splits, plot_flag=False):
     :return: None
 
     """
-    # Loading data...
-    #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
+    #Renaming features and target for more compactness
     x = features
     y = target
 
