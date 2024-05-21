@@ -5,11 +5,16 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import KFold
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, Matern
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 from utils import abs_path, get_data
 
+
+@ignore_warnings(category=ConvergenceWarning)
 def gaussian_reg(features, targets, n_splits, **kwargs):
     """
     gaussian_reg performs gaussian regression with k-fold cross-validation on the
@@ -24,9 +29,11 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
     :type plot_flag: bool
     :return: None
     """
+
     # Definition of keyword arguments
     plot_flag = kwargs.get('plot_flag', False)
     group = kwargs.get('group', None)
+
 
     # Initialize data standardization (done after the k-folding split to avoid leakage)
     scaler = StandardScaler()
@@ -39,9 +46,9 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
 
     if plot_flag:
         if group is not None:
-            fig, (ax, ax_group) = plt.subplots(1, 2, figsize=(20, 8))
+            _, (ax, ax_group) = plt.subplots(1, 2, figsize=(20, 8))
         else:
-            fig, ax = plt.subplots(figsize=(10, 8))
+            _, ax = plt.subplots(figsize=(10, 8))
 
     # Perform k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(features), 1):
@@ -55,7 +62,8 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
         x_test = scaler.transform(x_test)
 
         # Initialize and fit linear regression model
-        model = GaussianProcessRegressor()
+        kernel = C(1.0, (1, 1e2)) * Matern(length_scale=1.0, length_scale_bounds=(1, 1e2))
+        model = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer = 5)
         model.fit(x_train, y_train)
 
         # Predict on the test set
@@ -83,9 +91,13 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
                 ax_group.scatter(y_test_control, y_pred_control, color = 'royalblue', alpha = 0.5)
 
     # Print average evaluation metrics over all folds
-    print("Mean Absolute Error:", np.mean(mae_scores))
-    print("Mean Squared Error:", np.mean(mse_scores))
-    print("R-squared:", np.mean(r2_scores))
+    meaned_mae = np.mean(mae_scores)
+    meaned_mse = np.mean(mse_scores)
+    meaned_r2 = np.mean(r2_scores)
+
+    print("Mean Absolute Error:", meaned_mae)
+    print("Mean Squared Error:", meaned_mse)
+    print("R-squared:", meaned_r2)
 
     if plot_flag:
         target_range = [targets.min(), targets.max()]
@@ -114,6 +126,8 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
         plt.show()
     else:
         logger.info("Skipping the plot of actual vs predicted age ")
+
+    return meaned_mae, meaned_mse, meaned_r2
 
 def gaussian_reg_parsing():
     """
@@ -181,6 +195,7 @@ def gaussian_reg_parsing():
             logger.info(f"Opening file : {args.filename}")
             features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_col = args.group)
             gaussian_reg(features, targets, args.folds, plot_flag = args.plot, group = group)
+
         except FileNotFoundError:
             logger.error("File not found.")
     else:

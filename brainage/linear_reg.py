@@ -43,10 +43,10 @@ def linear_reg(features, targets, n_splits):
     best_model = None
     mae_best = float('inf')
 
-    figc, axc = plt.subplots(figsize=(10, 8))
+    _, axc = plt.subplots(figsize=(10, 8))
 
     # Perform k-fold cross-validation
-    for i, (train_index, test_index) in enumerate(kf.split(features), 1):
+    for _, (train_index, test_index) in enumerate(kf.split(features), 1):
         # Split data into training and testing sets
         x_train, x_test = features[train_index], features[test_index]
         y_train, y_test = targets[train_index], targets[test_index]
@@ -80,6 +80,7 @@ def linear_reg(features, targets, n_splits):
     print("Mean Absolute Error on control:", mae)
     print("R-squared on control:", r2)
 
+
     target_range = [targets.min(), targets.max()]
     # Plotting the ideal line (y=x)
     axc.plot(target_range, target_range, 'k--', lw=2)
@@ -105,7 +106,7 @@ def lin_ads_prediction(features, targets, model):
     print("Mean Absolute Error on exp:", mae)
     print("R-squared on exp:", r2)
 
-    figa, axa = plt.subplots(figsize=(10, 8))
+    _, axa = plt.subplots(figsize=(10, 8))
     target_range = [targets.min(), targets.max()]
     # Plot the ideal line (y=x)
     axa.plot(target_range, target_range, 'k--', lw=2)
@@ -123,7 +124,6 @@ def lin_ads_prediction(features, targets, model):
     # plt.savefig('linear_reg_exp.png', transparent = True)
     pad_ads = y_pred.ravel()-targets
     return pad_ads
-
 
 def linear_reg_parsing():
     """
