@@ -5,7 +5,6 @@ import pandas as pd
 from loguru import logger
 from neuroHarmonize import harmonizationLearn, harmonizationApply
 
-
 def abs_path(local_filename, data_folder):
     """
     Gets the absolute path of the file given the name of the folder containing the data
