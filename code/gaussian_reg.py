@@ -5,12 +5,16 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import KFold
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, Matern
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 from code.abspath import abs_path
 from code.csvreader import get_data
 
+@ignore_warnings(category=ConvergenceWarning)
 def gaussian_reg(features, target, n_splits,  plot_flag=False):
     """
     gaussian_reg performs gaussian regression with k-fold cross-validation on the
@@ -53,7 +57,8 @@ def gaussian_reg(features, target, n_splits,  plot_flag=False):
         y_train, y_test = y[train_index], y[test_index]
 
         # Initialize and fit linear regression model
-        model = GaussianProcessRegressor()
+        kernel = C(1.0, (1, 1e2)) * Matern(length_scale=1.0, length_scale_bounds=(1, 1e2))
+        model = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer = 5)
         model.fit(x_train, y_train)
 
         # Predict on the test set
