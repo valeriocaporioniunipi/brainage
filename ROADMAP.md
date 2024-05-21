@@ -13,7 +13,7 @@ Example paper: Cole et al., Predicting brain age with deep learning from raw ima
   - [ ] Evaluating the performance for local features, changing acquisition site
   - [ ] Comparing the performance across different acquisition sites
   - [ ] Update dependencies (automatic make html, requirements)
-  - [ ] Unit testing
+  - [x] Unit testing
   - [ ] Autistic vs non-autistic datasets
   - [ ] Slides
 
