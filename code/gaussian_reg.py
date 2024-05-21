@@ -54,7 +54,6 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
 
-
         # Initialize and fit linear regression model
         model = GaussianProcessRegressor()
         model.fit(x_train, y_train)

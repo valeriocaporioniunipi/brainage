@@ -8,7 +8,8 @@ from neuroHarmonize import harmonizationLearn, harmonizationApply
 def abs_path(local_filename, data_folder):
     """
     Gets the absolute path of the file given the name of the folder containing the data
-    and the name of the file inside that folder and assuming that the repository contains a data folder
+    and the name of the file inside that folder and
+    assuming that the repository contains a data folder
     and a code folder.
 
     :param local_filename: name of the data file
@@ -122,6 +123,59 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # implicit else
     return features, targets
 
+def p_value_emp(arr1, arr2, permutations=100000):
+    '''
+    Calculate the empirical p-value for the difference in means
+    between two groups using permutation testing.
+
+    :param array-like arr1: Data for the first group.
+    :param array-like arr2: Data for the second group.
+    :param int permutations: Number of permutations to perform
+                                 for the permutation test. Default is 100,000.
+
+    :return: Empirically calculated p-value for the observed difference in means.
+    :rtype: float
+
+    This function performs a permutation test to
+    estimate the empirical p-value for the difference in means between two groups.
+    The observed test statistic is the difference in means between arr2 and arr1.
+
+    The function generates permuted test statistics by randomly permuting
+    the data between the two groups and calculates the difference in means for each permutation.
+    The empirical p-value is then calculated as the proportion
+    of permuted differences in means that are greater than
+    or equal to the observed difference in means.
+    '''
+
+    # Observed test statistic (difference in means)
+    observed_stat = np.mean(arr2) - np.mean(arr1)
+
+    # Initialize array to store permuted test statistics
+    permuted_stat = np.zeros(permutations)
+
+    # Perform permutations and calculate permuted test statistics
+    for i in range(permutations):
+        # Concatenate and randomly permute the data
+        combined_data = np.concatenate((arr1, arr2))
+        np.random.shuffle(combined_data)
+
+        # Split permuted data into two groups
+        permuted_arr1 = combined_data[:len(arr1)]
+        permuted_arr2 = combined_data[len(arr1):]
+
+        # Calculate test statistic for permuted data
+        permuted_statistic = np.mean(permuted_arr2) - np.mean(permuted_arr1)
+
+        # Store permuted statistic
+        permuted_stat[i] = permuted_statistic
+
+    # Calculate p-value
+    p_value = np.sum(np.abs(permuted_stat) >= np.abs(observed_stat)) / permutations
+
+    print("Empirical p-value:", p_value)
+
+    return p_value
+
 
 def oversampling(features, targets, **kwargs):
     """
@@ -167,7 +221,7 @@ def oversampling(features, targets, **kwargs):
     if group is not None:
         return new_features, new_targets, new_group
     else:
-        return new_features, new_targets
+        return new_features, new_targets, None
 
 def classification_targets(filename, column_name):
     """

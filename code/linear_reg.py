@@ -9,9 +9,14 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from utils import abs_path, get_data
+from utils import abs_path, get_data, p_value_emp
 
-def linear_reg(features, targets, n_splits, **kwargs):
+def group_selection(array, group, value):
+    indices = np.where(group == value)[0]
+    selected = array[indices]
+    return selected
+
+def linear_reg(features, targets, n_splits):
 
     """
     linear_reg performs linear regression with k-fold cross-validation on the
@@ -25,12 +30,7 @@ def linear_reg(features, targets, n_splits, **kwargs):
     :param plot_flag: optional (default = False): Whether to plot the actual vs. predicted values
     :type plot_flag: bool
     :return: None
-
     """
-
-    # Definition of keyword arguments
-    plot_flag = kwargs.get('plot_flag', False)
-    group = kwargs.get('group', None)
 
     # Initialize data standardization (done after the k-folding split to avoid leakage)
     scaler = StandardScaler()
@@ -38,25 +38,21 @@ def linear_reg(features, targets, n_splits, **kwargs):
     # Initialize k-fold cross-validation
     kf = KFold(n_splits=n_splits, shuffle = True, random_state= 42)
 
-    # Initialize lists to store evaluation metrics
-    mae_scores, mse_scores, r2_scores = [], [], []
+    # Initialize lists to store evaluation metrics and prediction-actual-difference list
+    mae_scores, r2_scores = [],[]
+    pad_control = []
 
-    # Initialize models list
-    models = []
+    # Initialization in order to find the best model parameters
+    best_model = None
+    mae_best = float('inf')
 
-    if plot_flag:
-        if group is not None:
-            fig, (ax, ax_group) = plt.subplots(1, 2, figsize=(20, 8))
-        else:
-            fig, ax = plt.subplots(figsize=(10, 8))
+    figc, axc = plt.subplots(figsize=(10, 8))
 
     # Perform k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(features), 1):
         # Split data into training and testing sets
         x_train, x_test = features[train_index], features[test_index]
         y_train, y_test = targets[train_index], targets[test_index]
-        if group is not None:
-            group_test = group[test_index]
 
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
@@ -64,63 +60,73 @@ def linear_reg(features, targets, n_splits, **kwargs):
         # Initialize and fit linear regression model
         model = LinearRegression()
         model.fit(x_train, y_train)
-        models.append(model)
 
         # Predict on the test set
         y_pred = model.predict(x_test)
 
         # Evaluate the model
         mae = mean_absolute_error(y_test, y_pred)
-        mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
+        if mae < mae_best:
+            mae_best = mae
+            best_model = model
 
         mae_scores.append(mae)
-        mse_scores.append(mse)
         r2_scores.append(r2)
+        pad_control.extend(y_pred.ravel()-y_test)
 
         # Plot actual vs. predicted values for current fold
-        if plot_flag:
-            ax.scatter(y_test, y_pred, alpha=0.5,
-                        label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
-            if group is not None:
-                y_test_exp = y_test[group_test == 1]
-                y_pred_exp = y_pred[group_test == 1]
-                y_test_control = y_test[group_test == -1]
-                y_pred_control = y_pred[group_test == -1]
-                ax_group.scatter(y_test_exp, y_pred_exp,color = 'r', alpha = 0.5)
-                ax_group.scatter(y_test_control, y_pred_control, color = 'royalblue', alpha = 0.5)
+        axc.scatter(y_test, y_pred, alpha=0.5, label =f'MAE : {mae:.2} y')
 
     # Print average evaluation metrics over all folds
-    print("Mean Absolute Error:", np.mean(mae_scores))
-    print("Mean Squared Error:", np.mean(mse_scores))
-    print("R-squared:", np.mean(r2_scores))
+    mae, r2 = np.mean(mae_scores), np.mean(r2_scores)
+    print("Mean Absolute Error on control:", mae)
+    print("R-squared on control:", r2)
 
-    if plot_flag:
-        target_range = [targets.min(), targets.max()]
-        # Plot the ideal line (y=x)
-        ax.plot(target_range, target_range, 'k--', lw=2)
+    target_range = [targets.min(), targets.max()]
+    # Plotting the ideal line (y=x)
+    axc.plot(target_range, target_range, 'k--', lw=2)
 
-        # Set plot labels and title
-        ax.set_xlabel('Actual age [y]', fontsize = 20)
-        ax.set_ylabel('Predicted age [y]', fontsize = 20)
-        ax.set_title('Actual vs. predicted age', fontsize = 24)
+    # Set plot labels and title
+    axc.set_xlabel('Actual age [y]', fontsize = 20)
+    axc.set_ylabel('Predicted age [y]', fontsize = 20)
+    axc.set_title('Actual vs. predicted age - control', fontsize = 24)
 
-        # Add legend and grid to the plot
-        ax.legend(fontsize = 16)
-        ax.grid(False)
-        if group is not None:
-            ax_group.plot(target_range, target_range, 'k--', lw=2)
-            ax_group.set_xlabel('Actual age [y]', fontsize = 20)
-            ax_group.set_ylabel('Predicted age [y]', fontsize = 20)
-            ax_group.set_title('Actual vs. predicted age - exp. vs. control', fontsize = 24)
-            ax_group.grid(False)
-            exp_legend = ax_group.scatter([], [], marker = 'o', color = 'r', label = 'exp.', alpha = 0.5)
-            control_legend = ax_group.scatter([], [], marker = 'o', color = 'royalblue', label = 'control', alpha = 0.5)
-            ax_group.legend(handles = [exp_legend, control_legend], loc='lower right', fontsize = 16)
-        # Show the plot
-        plt.show()
-    else:
-        logger.info("Skipping the plot of actual vs predicted age ")
+    # Add legend and grid to the plot
+    axc.legend(fontsize = 16)
+    axc.grid(False)
+    # plt.savefig('linear_reg_control.png', transparent = True)
+    
+    return best_model, mae, r2, pad_control
+
+def lin_ads_prediction(features, targets, model):
+    scaler = StandardScaler()
+    features = scaler.fit_transform(features)
+    y_pred = model.predict(features)
+    mae = mean_absolute_error(targets, y_pred)
+    r2 = r2_score(targets, y_pred)
+    print("Mean Absolute Error on exp:", mae)
+    print("R-squared on exp:", r2)
+
+    figa, axa = plt.subplots(figsize=(10, 8))
+    target_range = [targets.min(), targets.max()]
+    # Plot the ideal line (y=x)
+    axa.plot(target_range, target_range, 'k--', lw=2)
+    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
+                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
+
+    # Set plot labels and title
+    axa.set_xlabel('Actual age [y]', fontsize = 20)
+    axa.set_ylabel('Predicted age [y]', fontsize = 20)
+    axa.set_title('Actual vs. predicted age - ASD', fontsize = 24)
+
+    # Add legend and grid to the plot
+    axa.legend(fontsize = 16)
+    axa.grid(False)
+    # plt.savefig('linear_reg_exp.png', transparent = True)
+    pad_ads = y_pred.ravel()-targets
+    return pad_ads
+
 
 def linear_reg_parsing():
     """
@@ -131,22 +137,26 @@ def linear_reg_parsing():
     such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
     There are two ways to pass the csv file to this function. It's possible to
     pass the absolutepath of the dataset or you can store the dataset in a brother folder
-    of the one containing code, and pass to the parsing function the filename and his container-folder.
-    The parameters listed below are not parameters of the functions but are parsing arguments that have 
+    of the one containing code, and pass to the parsing
+    function the filename and his container-folder.
+    The parameters listed below are not parameters of the functions but
+    are parsing arguments that have 
     to be passed to command line when executing the program as follow:
 
     .. code::
 
         $Your_PC>python linear_reg.py file.csv --target --location --folds --ex_cols --plot 
 
-    where file.csv is the only mandatory argument, while others are optional and takes some default values,
+    where file.csv is the only mandatory argument,
+    while others are optional and takes some default values,
     that if they have to be modified you can write for example:
 
     .. code::
 
         $Your_PC>python linear_reg.py file.csv --folds 10  
 
-    :param filename: path to the CSV file containing the dataset or the name of the file if --location argument is passed 
+    :param filename: path to the CSV file containing
+    the dataset or the name of the file if --location argument is passed 
     :type filename: str
     :param target: optional (default = AGE_AT_SCAN): Name of the column holding target values
     :type target: str
@@ -185,10 +195,24 @@ def linear_reg_parsing():
 
     if args.folds > 4:
         try:
-            args.filename = abs_path(args.filename,args.location) if args.location else args.filename
+            args.filename = abs_path(args.filename,
+                                    args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
-            features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_col = args.group)
-            linear_reg(features, targets, args.folds, plot_flag = args.plot, group = group)
+            features, targets, group = get_data(args.filename,
+                                                args.target,
+                                                args.ex_cols,
+                                                group_col = args.group)
+            features_control = group_selection(features, group, -1)
+            targets_control = group_selection(targets, group, -1)
+            features_experimental = group_selection(features, group, 1)
+            targets_experimental = group_selection(targets, group, 1)
+            model, _, _, pad_control = linear_reg(features_control, targets_control, args.folds)
+            pad_ads = lin_ads_prediction(features_experimental, targets_experimental, model)
+            p_value_emp(pad_control, pad_ads)
+            if args.plot:
+                plt.show()
+            else:
+                logger.info('Skipping plots')
         except FileNotFoundError:
             logger.error("File not found.")
     else:
