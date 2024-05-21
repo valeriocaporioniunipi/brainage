@@ -1,6 +1,18 @@
 import unittest
 import numpy as np
-from code.linear_reg import linear_reg
+import os
+import sys
+
+# Ottieni il percorso assoluto della directory che contiene il file corrente
+current_dir = os.path.dirname(__file__)
+
+# Risali di una directory (per uscire da 'other_directory') e poi entra nella directory 'brainage'
+brainage_dir = os.path.abspath(os.path.join(current_dir, '..', 'brainage'))
+
+# Aggiungi 'brainage' al percorso di ricerca dei moduli
+sys.path.insert(0, brainage_dir)
+
+from brainage.linear_reg import linear_reg
 
 class BasicLinearRegression(unittest.TestCase):
 

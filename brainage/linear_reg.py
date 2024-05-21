@@ -4,21 +4,19 @@ from loguru import logger
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import KFold
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, Matern
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils._testing import ignore_warnings
-from sklearn.exceptions import ConvergenceWarning
+from pathlib import Path
 
-from code.abspath import abs_path
-from code.csvreader import get_data
+from abspath import abs_path
+from csvreader import get_data
 
-@ignore_warnings(category=ConvergenceWarning)
-def gaussian_reg(features, target, n_splits,  plot_flag=False):
+def linear_reg(features, target, n_splits, plot_flag=False):
+
     """
-    gaussian_reg performs gaussian regression with k-fold cross-validation on the
-    given dataset and prints evaluation metrics of the gaussian regression model
+    linear_reg performs linear regression with k-fold cross-validation on the
+    given dataset and prints evaluation metrics of the linear regression model
     such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
 
     :param filename: path to the CSV file containing the dataset 
@@ -30,9 +28,8 @@ def gaussian_reg(features, target, n_splits,  plot_flag=False):
     :return: None
 
     """
-    # Loading data...
-    #Importing features excluded first three columns: FILE_ID, AGE_AT_SCAN, SEX
-    x = features 
+    #Renaming features and target for more compactness
+    x = features
     y = target
 
     # Standardize features
@@ -57,8 +54,7 @@ def gaussian_reg(features, target, n_splits,  plot_flag=False):
         y_train, y_test = y[train_index], y[test_index]
 
         # Initialize and fit linear regression model
-        kernel = C(1.0, (1, 1e2)) * Matern(length_scale=1.0, length_scale_bounds=(1, 1e2))
-        model = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer = 5)
+        model = LinearRegression()
         model.fit(x_train, y_train)
 
         # Predict on the test set
@@ -77,6 +73,7 @@ def gaussian_reg(features, target, n_splits,  plot_flag=False):
         plt.scatter(y_test, y_pred, alpha=0.5, label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
 
     # Print average evaluation metrics over all folds
+
     meaned_mae = np.mean(mae_scores)
     meaned_mse = np.mean(mse_scores)
     meaned_r2 = np.mean(r2_scores)
@@ -99,16 +96,16 @@ def gaussian_reg(features, target, n_splits,  plot_flag=False):
         plt.legend()
         plt.grid(True)
 
-
         # Show the plot
         plt.show()
-
+    
     return meaned_mae, meaned_mse, meaned_r2
 
-def gaussian_reg_parsing():
+
+def linear_reg_parsing():
     """
-    gaussian_reg function parsed that runs when the .py file is called.
-    It performs a  gaussian regression with k-fold cross-validation
+    linear_reg function parsed that runs when the .py file is called.
+    It performs a  linear regression with k-fold cross-validation
     predicting the age of patients from magnetic resonance imaging and
     prints evaluation metrics of the linear regression model 
     such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
@@ -120,14 +117,14 @@ def gaussian_reg_parsing():
 
     .. code::
 
-        $Your_PC>python gaussian_reg.py file.csv --target --location --folds --ex_cols --plot 
+        $Your_PC>python linear_reg.py file.csv --target --location --folds --ex_cols --plot 
 
     where file.csv is the only mandatory argument, while others are optional and takes some default values,
     that if they have to be modified you can write for example:
 
     .. code::
 
-        $Your_PC>python gaussian_reg.py file.csv --folds 10  
+        $Your_PC>python linear_reg.py file.csv --folds 10  
 
     :param filename: path to the CSV file containing the dataset or the name of the file if --location argument is passed 
     :type filename: str
@@ -144,13 +141,15 @@ def gaussian_reg_parsing():
     :return: None
 
     """
+
     parser = argparse.ArgumentParser(description=
-        'Gaussian regression predicting the age of patients from magnetic resonance imaging')
+        'Linear regression predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename",
-                         help="Name of the file that has to be analized")
+                         help="Name of the file that has to be analized if --location argument is"
+                        " passed. Otherwise pass to filename the absolutepath of the file")
     parser.add_argument("--target", default = "AGE_AT_SCAN",
-                        help="Name of the colums holding target values")
+                        help="Name of the column holding target values")
     parser.add_argument("--location",
                          help="Location of the file, i.e. folder containing it")
     parser.add_argument("--folds", type = int, default = 5,
@@ -167,7 +166,7 @@ def gaussian_reg_parsing():
             args.filename = abs_path(args.filename,args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
             features, targets = get_data(args.filename, args.target, args.ex_cols)
-            gaussian_reg(features, targets, args.folds, args.plot)
+            linear_reg(features, targets, args.folds, args.plot)
         except FileNotFoundError:
             logger.error("File not found.")
     else:
@@ -175,5 +174,4 @@ def gaussian_reg_parsing():
 
 
 if __name__ == "__main__":
-    gaussian_reg_parsing()
-
+    linear_reg_parsing()

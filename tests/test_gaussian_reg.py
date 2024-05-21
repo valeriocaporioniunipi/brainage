@@ -1,7 +1,19 @@
 import unittest
 import numpy as np
-from code.gaussian_reg import gaussian_reg
 from matplotlib import pyplot as plt
+import sys
+import os
+
+# Ottieni il percorso assoluto della directory che contiene il file corrente
+current_dir = os.path.dirname(__file__)
+
+# Risali di una directory (per uscire da 'other_directory') e poi entra nella directory 'brainage'
+brainage_dir = os.path.abspath(os.path.join(current_dir, '..', 'brainage'))
+
+# Aggiungi 'brainage' al percorso di ricerca dei moduli
+sys.path.insert(0, brainage_dir)
+
+from brainage.gaussian_reg import gaussian_reg
 
 class BasicGaussianRegression(unittest.TestCase):
 

@@ -1,5 +1,5 @@
 import unittest
-from code.abspath import abs_path
+from brainage.abspath import abs_path
 
 class abs_path_checker(unittest.TestCase):
 
