@@ -12,4 +12,8 @@ Example paper: Cole et al., Predicting brain age with deep learning from raw ima
   - [ ] Comparison between the regression models, regarding global features
   - [ ] Evaluating the performance for local features, changing acquisition site
   - [ ] Comparing the performance across different acquisition sites
-  - [ ] Update dependencies
+  - [ ] Update dependencies (automatic make html, requirements)
+  - [x] Unit testing
+  - [ ] Autistic vs non-autistic datasets
+  - [ ] Slides
+
