@@ -9,12 +9,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 
-from utils import abs_path, get_data, p_value_emp
+from utils import abs_path, get_data, p_value_emp, group_selection
 
-def group_selection(array, group, value):
-    indices = np.where(group == value)[0]
-    selected = array[indices]
-    return selected
+
 
 def linear_reg(features, targets, n_splits):
 

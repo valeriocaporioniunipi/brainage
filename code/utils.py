@@ -223,30 +223,10 @@ def oversampling(features, targets, **kwargs):
     else:
         return new_features, new_targets, None
 
-def classification_targets(filename, column_name):
-    """
-    Converts a list of strings into a numpy array of one-hot encoded arrays.
-
-    :param filename: Path to the CSV file
-    :type filename: str
-    :param column_name: Name of the column to strip
-    :type column_name: str
-    :return: A numpy array of one-hot encoded arrays
-    :rtype: numpy.ndarray
-    """
-    column_series = pd.Series(csv_reader(filename, column_name))
-    str_list = column_series.apply(lambda x: x.split('_')[0]).tolist()
-    unique_strings = sorted(set(str_list))
-    string_to_index = {string: index for index, string in enumerate(unique_strings)}
-    num_classes = len(unique_strings)
-
-    def one_hot_encode(string):
-        one_hot = np.zeros(num_classes)
-        one_hot[string_to_index[string]] = 1
-        return one_hot
-
-    one_hot_encoded_array = np.array([one_hot_encode(string) for string in str_list])
-    return one_hot_encoded_array, num_classes
+def group_selection(array, group, value):
+    indices = np.where(group == value)[0]
+    selected = array[indices]
+    return selected
 
 def csv_reader_parsing():
     """
