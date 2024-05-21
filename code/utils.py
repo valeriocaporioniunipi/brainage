@@ -5,6 +5,7 @@ import pandas as pd
 from loguru import logger
 from neuroHarmonize import harmonizationLearn, harmonizationApply
 
+
 def abs_path(local_filename, data_folder):
     """
     Gets the absolute path of the file given the name of the folder containing the data
@@ -55,6 +56,7 @@ def csv_reader(filename, column_name=None, show_flag=False):
             print(df[column_name])
         return df[column_name]
 
+
 def handle_spurious(df):
     """
     Handles spurious zeroes and -9999 values in the DataFrame.
@@ -96,7 +98,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # Importing data from csv file as data
     data = pd.read_csv(filename, delimiter = ';')
     # 
-    #if group_col is not None:
+    # if group_col is not None:
     #    data = data[data[group_col] == -1]
 
     # Excluding the first ex_cols columns
@@ -123,8 +125,9 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # implicit else
     return features, targets
 
+
 def p_value_emp(arr1, arr2, permutations=100000):
-    '''
+    """
     Calculate the empirical p-value for the difference in means
     between two groups using permutation testing.
 
@@ -145,7 +148,7 @@ def p_value_emp(arr1, arr2, permutations=100000):
     The empirical p-value is then calculated as the proportion
     of permuted differences in means that are greater than
     or equal to the observed difference in means.
-    '''
+    """
 
     # Observed test statistic (difference in means)
     observed_stat = np.mean(arr2) - np.mean(arr1)
@@ -179,7 +182,7 @@ def p_value_emp(arr1, arr2, permutations=100000):
 
 def oversampling(features, targets, **kwargs):
     """
-    Oversamples minority classes in the dataset to balance class distribution.
+    Oversampled minority classes in the dataset to balance class distribution.
 
     :param features: Feature array
     :type features: numpy.ndarray
@@ -223,10 +226,12 @@ def oversampling(features, targets, **kwargs):
     else:
         return new_features, new_targets, None
 
+
 def group_selection(array, group, value):
     indices = np.where(group == value)[0]
     selected = array[indices]
     return selected
+
 
 def csv_reader_parsing():
     """
@@ -263,6 +268,7 @@ def csv_reader_parsing():
         logger.error(f"File not found: {e}")
     except KeyError as e:
         logger.error(f"Column '{args.column}' not found in the CSV file: {e}")
+
 
 if __name__ == "__main__":
     csv_reader_parsing()

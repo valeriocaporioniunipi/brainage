@@ -35,16 +35,16 @@ str_list = str_list[:150]
 sites = str_list.unique()
 
 
-
 # Function to create a binary classifier model
 def create_class_nn(input_shape,
                     num_hidden_layers=1,
                     num_hidden_layer_nodes=32,
                     optimizer='adam',
                     metrics=['accuracy'],
-                    summary_flag=False):
+                    summary_flag=False
+                    ):
     model = Sequential()
-    model.add(layers.Input(shape = (input_shape,)))
+    model.add(layers.Input(shape=(input_shape,)))
     for _ in range(num_hidden_layers - 1):
         model.add(layers.Dense(num_hidden_layer_nodes, activation='relu'))
     model.add(layers.Dense(1, activation='sigmoid'))
@@ -52,6 +52,7 @@ def create_class_nn(input_shape,
     if summary_flag:
         model.summary()
     return model
+
 
 # Prepare AUC matrix
 auc_matrix = np.zeros((len(sites), len(sites)))
@@ -65,27 +66,27 @@ for i, site_i in enumerate(sites):
         site_i_indices = str_list == site_i
         site_j_indices = str_list == site_j
         indices = site_i_indices | site_j_indices
-        
+
         site_data = data[indices]
         site_targets = targets[indices]
         # Binary labels: 1 for site_i, 0 for site_j
-        site_labels = site_i_indices[indices].astype(int)  
-        
+        site_labels = site_i_indices[indices].astype(int)
+
         # Train-test split
         X_train, X_test, y_train, y_test = train_test_split(site_data,
                                                             site_labels,
                                                             test_size=0.3,
                                                             random_state=42)
-        
+
         # Create and train model
         logger.info(f"Model regarding {sites[i]} vs {sites[j]} classification ")
         model = create_class_nn(input_shape=X_train.shape[1])
         model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=0)
-        
+
         # Predict and compute AUC
         y_pred = model.predict(X_test).ravel()
         auc = roc_auc_score(y_test, y_pred)
-        
+
         # Fill the AUC matrix
         auc_matrix[i, j] = auc
         auc_matrix[j, i] = auc
@@ -97,5 +98,6 @@ sns.heatmap(auc_matrix, xticklabels=sites,
             annot=True,
             fmt=".2f",
             cmap='coolwarm')
+
 plt.title('AUC Scores Heatmap')
 plt.show()

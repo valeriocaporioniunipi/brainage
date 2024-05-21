@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 from utils import abs_path, get_data
 
+
 def gaussian_reg(features, targets, n_splits, **kwargs):
     """
     gaussian_reg performs gaussian regression with k-fold cross-validation on the
@@ -32,7 +33,7 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
     scaler = StandardScaler()
 
     # Initialize k-fold cross-validation
-    kf = KFold(n_splits=n_splits, shuffle = True, random_state= 42)
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     # Initialize lists to store evaluation metrics
     mae_scores, mse_scores, r2_scores = [], [], []
@@ -73,14 +74,14 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
         # Plot actual vs. predicted values for current fold
         if plot_flag:
             ax.scatter(y_test, y_pred, alpha=0.5,
-                        label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+                       label=f'Fold {i} - MAE = {np.round(mae_scores[i - 1], 2)}')
             if group is not None:
                 y_test_exp = y_test[group_test == 1]
                 y_pred_exp = y_pred[group_test == 1]
                 y_test_control = y_test[group_test == -1]
                 y_pred_control = y_pred[group_test == -1]
-                ax_group.scatter(y_test_exp, y_pred_exp,color = 'r', alpha = 0.5)
-                ax_group.scatter(y_test_control, y_pred_control, color = 'royalblue', alpha = 0.5)
+                ax_group.scatter(y_test_exp, y_pred_exp, color='r', alpha=0.5)
+                ax_group.scatter(y_test_control, y_pred_control, color='royalblue', alpha=0.5)
 
     # Print average evaluation metrics over all folds
     print("Mean Absolute Error:", np.mean(mae_scores))
@@ -93,40 +94,41 @@ def gaussian_reg(features, targets, n_splits, **kwargs):
         ax.plot(target_range, target_range, 'k--', lw=2)
 
         # Set plot labels and title
-        ax.set_xlabel('Actual age [y]', fontsize = 20)
-        ax.set_ylabel('Predicted age [y]', fontsize = 20)
-        ax.set_title('Actual vs. predicted age', fontsize = 24)
+        ax.set_xlabel('Actual age [y]', fontsize=20)
+        ax.set_ylabel('Predicted age [y]', fontsize=20)
+        ax.set_title('Actual vs. predicted age', fontsize=24)
 
         # Add legend and grid to the plot
-        ax.legend(fontsize = 16)
+        ax.legend(fontsize=16)
         ax.grid(False)
         if group is not None:
             ax_group.plot(target_range, target_range, 'k--', lw=2)
-            ax_group.set_xlabel('Actual age [y]', fontsize = 20)
-            ax_group.set_ylabel('Predicted age [y]', fontsize = 20)
-            ax_group.set_title('Actual vs. predicted age - exp. vs. control', fontsize = 24)
+            ax_group.set_xlabel('Actual age [y]', fontsize=20)
+            ax_group.set_ylabel('Predicted age [y]', fontsize=20)
+            ax_group.set_title('Actual vs. predicted age - exp. vs. control', fontsize=24)
             ax_group.grid(False)
-            exp_legend = ax_group.scatter([], [], marker = 'o', color = 'r', label = 'exp.', alpha = 0.5)
-            control_legend = ax_group.scatter([], [], marker = 'o', color = 'royalblue', label = 'control', alpha = 0.5)
-            ax_group.legend(handles = [exp_legend, control_legend], loc='lower right', fontsize = 16)
+            exp_legend = ax_group.scatter([], [], marker='o', color='r', label='exp.', alpha=0.5)
+            control_legend = ax_group.scatter([], [], marker='o', color='royalblue', label='control', alpha=0.5)
+            ax_group.legend(handles=[exp_legend, control_legend], loc='lower right', fontsize=16)
         # Show the plot
-        #plt.savefig('/Users/valeriocaporioni/Downloads/gaussian_reg.png', transparent = True)
+        # plt.savefig('/Users/valeriocaporioni/Downloads/gaussian_reg.png', transparent = True)
         plt.show()
     else:
         logger.info("Skipping the plot of actual vs predicted age ")
 
+
 def gaussian_reg_parsing():
     """
     gaussian_reg function parsed that runs when the .py file is called.
-    It performs a  gaussian regression with k-fold cross-validation
+    It performs a gaussian regression with k-fold cross-validation
     predicting the age of patients from magnetic resonance imaging and
     prints evaluation metrics of the linear regression model 
     such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
     There are two ways to pass the csv file to this function. It's possible to
-    pass the absolutepath of the dataset or you can store the dataset in a brother folder
+    pass the absolute path of the dataset, or you can store the dataset in a brother folder
     of the one containing code, and pass to the parsing function the filename and his container-folder.
     The parameters listed below are not parameters of the functions but are parsing arguments that have 
-    to be passed to command line when executing the program as follow:
+    to be passed to command line when executing the program as follows:
 
     .. code::
 
@@ -155,32 +157,32 @@ def gaussian_reg_parsing():
 
     """
     parser = argparse.ArgumentParser(description=
-        'Linear regression predicting the age of patients from magnetic resonance imaging')
+                                     'Linear regression predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename",
-                         help="Name of the file that has to be analized if --location argument is"
-                        " passed. Otherwise pass to filename the absolutepath of the file")
-    parser.add_argument("--target", default = "AGE_AT_SCAN",
+                        help="Name of the file that has to be analyzed if --location argument is"
+                             " passed. Otherwise pass to filename the absolute path of the file")
+    parser.add_argument("--target", default="AGE_AT_SCAN",
                         help="Name of the column holding target values")
     parser.add_argument("--location",
-                         help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--folds", type = int, default = 5,
-                         help="Number of folds in the k-folding (>4, default 5)")
-    parser.add_argument("--ex_cols", type = int, default = 5,
-                         help="Number of columns excluded when importing (default 3)")
+                        help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--folds", type=int, default=5,
+                        help="Number of folds in the k-folding (>4, default 5)")
+    parser.add_argument("--ex_cols", type=int, default=5,
+                        help="Number of columns excluded when importing (default 3)")
     parser.add_argument("--plot", action="store_true",
-                         help="Show the plot of actual vs predicted brain age")
-    parser.add_argument("--group", default = 'DX_GROUP',
+                        help="Show the plot of actual vs predicted brain age")
+    parser.add_argument("--group", default='DX_GROUP',
                         help="Name of the column indicating the group (experimental vs control)")
 
     args = parser.parse_args()
 
     if args.folds > 4:
         try:
-            args.filename = abs_path(args.filename,args.location) if args.location else args.filename
+            args.filename = abs_path(args.filename, args.location) if args.location else args.filename
             logger.info(f"Opening file : {args.filename}")
-            features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_col = args.group)
-            gaussian_reg(features, targets, args.folds, plot_flag = args.plot, group = group)
+            features, targets, group = get_data(args.filename, args.target, args.ex_cols, group_col=args.group)
+            gaussian_reg(features, targets, args.folds, plot_flag=args.plot, group=group)
         except FileNotFoundError:
             logger.error("File not found.")
     else:
@@ -189,4 +191,3 @@ def gaussian_reg_parsing():
 
 if __name__ == "__main__":
     gaussian_reg_parsing()
-

@@ -3,7 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-data = pd.read_csv(r'/Users/valeriocaporioni/Documents/cmepda/brainage/data/FS_features_ABIDE_males.csv', delimiter=';')
+data = pd.read_csv(r'/Users/valeriocaporioni/Documents/cmepda/brainage/data/FS_features_ABIDE_males.csv',
+                   delimiter=';'
+                   )
 data['SITE'] = data['FILE_ID'].str.split('_').str[0]
 
 age_by_site = {}

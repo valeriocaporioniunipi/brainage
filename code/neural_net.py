@@ -16,12 +16,13 @@ from scikeras.wrappers import KerasRegressor
 
 from utils import abs_path, get_data, oversampling
 
+
 def create_reg_nn(input_shape,
-                  hidden_layers = 1,
-                  hidden_nodes = 48,
-                  optimizer = 'rmsprop',
-                  dropout = 0.05,
-                  summary_flag = False):
+                  hidden_layers=1,
+                  hidden_nodes=48,
+                  optimizer='rmsprop',
+                  dropout=0.05,
+                  summary_flag=False):
     """
     Create a neural network model using Keras in order to solve a regression problem.
 
@@ -41,8 +42,8 @@ def create_reg_nn(input_shape,
     :rtype: Sequential
     """
 
-    model = Sequential() # Defining the model
-    model.add(layers.Input(shape=input_shape)) # Placing an input layer
+    model = Sequential()  # Defining the model
+    model.add(layers.Input(shape=input_shape))  # Placing an input layer
     model.add(layers.Dropout(dropout))
     model.add(layers.BatchNormalization())
 
@@ -65,8 +66,9 @@ def create_reg_nn(input_shape,
         logger.info(f"Model successfully compiled with {hidden_layers} hidden layers")
     return model
 
+
 def training(features, targets, model, epochs, **kwargs):
-    """"
+    """
     Train a neural network using k-fold cross-validation.
     The function can show actual vs predicted brain age scatter plot and training history plot.
 
@@ -107,14 +109,14 @@ def training(features, targets, model, epochs, **kwargs):
     # would inadvertently influence the preprocessing steps).
 
     # Initialization of k-fold cross-validation
-    kf = KFold(n_splits=n_splits, shuffle = True)
+    kf = KFold(n_splits=n_splits, shuffle=True)
 
     # Initialization of lists to store evaluation metrics
     mae_scores, mse_scores, r2_scores = [], [], []
 
     # Initializing figures for plotting and creating rlated colours
     if hist_flag:
-        figh, axh = plt.subplots(figsize=(10,8))
+        figh, axh = plt.subplots(figsize=(10, 8))
 
     if plot_flag:
         if group is not None:
@@ -129,7 +131,7 @@ def training(features, targets, model, epochs, **kwargs):
     initial_weights = model.get_weights()
 
     # Initializing the list that will hold the models once trained
-    models =[]
+    models = []
 
     # Perform k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(features), 1):
@@ -139,14 +141,14 @@ def training(features, targets, model, epochs, **kwargs):
         if group is not None:
             group_test = group[test_index]
 
-        # Standandization (after the split)
+        # Standardization (after the split)
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
 
         # Oversampling
         if overs_flag:
             logger.info(f'Performing oversampling with {bins} bins')
-            x_train, y_train, _ = oversampling(x_train, y_train, bins = bins)
+            x_train, y_train, _ = oversampling(x_train, y_train, bins=bins)
 
         # Training the model (after having properly re-initialized the weights)
         model.set_weights(initial_weights)
@@ -154,7 +156,7 @@ def training(features, targets, model, epochs, **kwargs):
         history = model.fit(x_train, y_train, epochs=epochs,
                             batch_size=32,
                             validation_split=0.1,
-                            verbose = 0)
+                            verbose=0)
         logger.info('Training successfully ended ')
 
         # Predict on the test set
@@ -163,12 +165,12 @@ def training(features, targets, model, epochs, **kwargs):
         # Appending the model to models list
         models.append(model)
 
-        #Appending vectors with history data
+        # Appending vectors with history data
         if hist_flag:
             validation_loss = history.history['val_loss']
             training_loss = history.history['loss']
-            axh.plot(training_loss, label=f"Tr. {i}", color = colors[i])
-            axh.plot(validation_loss, label=f"Val. {i}", color = colors[i], ls = 'dashed')
+            axh.plot(training_loss, label=f"Tr. {i}", color=colors[i])
+            axh.plot(validation_loss, label=f"Val. {i}", color=colors[i], ls='dashed')
 
         # Evaluating the model
         mae = mean_absolute_error(y_test, y_pred)
@@ -183,15 +185,15 @@ def training(features, targets, model, epochs, **kwargs):
         if plot_flag:
             axp.scatter(y_test, y_pred,
                         alpha=0.5,
-                        color = colors[i],
-                        label=f'Fold {i} - MAE = {np.round(mae_scores[i-1], 2)}')
+                        color=colors[i],
+                        label=f'Fold {i} - MAE = {np.round(mae_scores[i - 1], 2)}')
             if group is not None:
                 y_test_exp = y_test[group_test == 1]
                 y_pred_exp = y_pred[group_test == 1]
                 y_test_control = y_test[group_test == -1]
                 y_pred_control = y_pred[group_test == -1]
-                axp_group.scatter(y_test_exp, y_pred_exp,color = 'k')
-                axp_group.scatter(y_test_control, y_pred_control, color = 'r')
+                axp_group.scatter(y_test_exp, y_pred_exp, color='k')
+                axp_group.scatter(y_test_control, y_pred_control, color='r')
 
     if hist_flag:
         axh.set_xlabel("epoch")
@@ -220,7 +222,7 @@ def training(features, targets, model, epochs, **kwargs):
         axp.set_title(f'Actual vs. predicted age - {n_splits} folds')
 
         # Adding legend and grid to the plots
-        figp.legend(loc = 'upper left')
+        figp.legend(loc='upper left')
         axp.grid(True)
         if group is not None:
             axp_group.plot(target_range, target_range, 'k--', lw=2)
@@ -228,14 +230,15 @@ def training(features, targets, model, epochs, **kwargs):
             axp_group.set_ylabel('Predicted age [y]')
             axp_group.set_title('Actual vs. predicted age - exp. vs. control')
             axp_group.grid(True)
-            exp_legend = axp_group.scatter([], [], marker = 'o', color = 'k', label = 'exp.')
-            control_legend = axp_group.scatter([], [], marker = 'o', color = 'r', label = 'control')
-            figp.legend(handles = [exp_legend, control_legend], loc='upper right')
+            exp_legend = axp_group.scatter([], [], marker='o', color='k', label='exp.')
+            control_legend = axp_group.scatter([], [], marker='o', color='r', label='control')
+            figp.legend(handles=[exp_legend, control_legend], loc='upper right')
     else:
         logger.info("Skipping the plot of actual vs predicted age ")
 
     plt.show()
     return scores, models
+
 
 def neural_net_parsing():
     """
@@ -282,99 +285,105 @@ def neural_net_parsing():
 
     """
     parser = argparse.ArgumentParser(description=
-        'Neural network predicting the age of patients from magnetic resonance imaging')
+                                     'Neural network predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename",
-                         help="Name of the file that has to be analized")
-    parser.add_argument("--target", default = "AGE_AT_SCAN",
+                        help="Name of the file that has to be analized")
+    parser.add_argument("--target", default="AGE_AT_SCAN",
                         help="Name of the column holding target values")
     parser.add_argument("--location",
-                         help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--hidden_layers", type = int, default = 1,
-                         help="Number of hidden layers in the neural network")
-    parser.add_argument("--hidden_nodes", type = int, default = 32,
-                         help="Number of hidden layer nodes in the neural network")
-    parser.add_argument("--epochs", type = int, default = 50,
-                         help="Number of epochs of training (default 50)")
-    parser.add_argument("--opt", default= "rmsprop",
-                         help="Optimizer (default = 'rmsprop')")
-    parser.add_argument("--folds", type = int, default = 5,
-                         help="Number of folds in the k-folding (>4, default 5)")
-    parser.add_argument("--dropout", type = float, default = 0.05,
-                         help="Dropout rate in the NN (default 0.05)")
-    parser.add_argument("--ex_cols", type = int, default = 3,
-                         help="Number of columns excluded when importing (default 3)")
+                        help="Location of the file, i.e. folder containing it")
+    parser.add_argument("--hidden_layers", type=int, default=1,
+                        help="Number of hidden layers in the neural network")
+    parser.add_argument("--hidden_nodes", type=int, default=32,
+                        help="Number of hidden layer nodes in the neural network")
+    parser.add_argument("--epochs", type=int, default=50,
+                        help="Number of epochs of training (default 50)")
+    parser.add_argument("--opt", default="rmsprop",
+                        help="Optimizer (default = 'rmsprop')")
+    parser.add_argument("--folds", type=int, default=5,
+                        help="Number of folds in the k-folding (>4, default 5)")
+    parser.add_argument("--dropout", type=float, default=0.05,
+                        help="Dropout rate in the NN (default 0.05)")
+    parser.add_argument("--ex_cols", type=int, default=3,
+                        help="Number of columns excluded when importing (default 3)")
     parser.add_argument("--summary", action="store_true",
-                         help="Show the summary of the neural network")
+                        help="Show the summary of the neural network")
     parser.add_argument("--history", action="store_true",
-                         help="Show the history of the training")
+                        help="Show the history of the training")
     parser.add_argument("--plot", action="store_true",
-                         help="Show the plot of actual vs predicted brain age")
-    parser.add_argument("--group", default = 'DX_GROUP',
+                        help="Show the plot of actual vs predicted brain age")
+    parser.add_argument("--group", default='DX_GROUP',
                         help="Name of the column indicating the group (experimental vs control)")
-    parser.add_argument("--overs", action = 'store_true', default = False,
+    parser.add_argument("--overs", action='store_true', default=False,
                         help="Oversampling, done in order to have"
-                        "a flat distribution of targets (default = True).")
-    parser.add_argument("--bins", type = int, default = 10,
+                             "a flat distribution of targets (default = True).")
+    parser.add_argument("--bins", type=int, default=10,
                         help="Number of bins in resampling (default 0 20)")
     parser.add_argument("--harm",
                         help="Name of the column of sites, used for data harmonization")
-    parser.add_argument("--grid", action = "store_true",
+    parser.add_argument("--grid", action="store_true",
                         help="Grid search for hyperparameter optimization")
 
     args = parser.parse_args()
 
     try:
         args.filename = abs_path(args.filename,
-                                        args.location) if args.location else args.filename
+                                 args.location) if args.location else args.filename
         logger.info(f"Opening file : {args.filename}")
         features, targets, group = get_data(args.filename,
                                             args.target,
                                             args.ex_cols,
-                                            group_col = args.group, 
-                                            site_col = args.harm)
+                                            group_col=args.group,
+                                            site_col=args.harm)
         epochs = args.epochs
         input_shape = np.shape(features[0])
         if not args.grid:
             model = create_reg_nn(input_shape,
-                                        hidden_layers = args.hidden_layers,
-                                        hidden_nodes = args.hidden_nodes,
-                                        dropout = args.dropout,
-                                        optimizer = args.opt,
-                                        summary_flag = args.summary)
+                                  hidden_layers=args.hidden_layers,
+                                  hidden_nodes=args.hidden_nodes,
+                                  dropout=args.dropout,
+                                  optimizer=args.opt,
+                                  summary_flag=args.summary)
             training(features,
-                        targets,
-                        model,
-                        epochs,
-                        n_splits = args.folds,
-                        bins = args.bins,
-                        group = group,
-                        overs_flag = args.overs,
-                        hist_flag = args.history,
-                        plot_flag = args.plot)
-        else:# args.grid
+                     targets,
+                     model,
+                     epochs,
+                     n_splits=args.folds,
+                     bins=args.bins,
+                     group=group,
+                     overs_flag=args.overs,
+                     hist_flag=args.history,
+                     plot_flag=args.plot)
+        else:  # args.grid
             param_grid = {
-            'model__hidden_layers': [1, 2, 4],
-            'model__hidden_nodes' : [32, 48],
-            'model__optimizer': ['adam', 'adagrad', 'rmsprop'],
-            'model__dropout': [0.0, 0.01, 0.05]
+                'model__hidden_layers': [1, 2, 4],
+                'model__hidden_nodes': [32, 48],
+                'model__optimizer': ['adam', 'adagrad', 'rmsprop'],
+                'model__dropout': [0.0, 0.01, 0.05]
             }
 
-            keras_regressor = KerasRegressor(model=lambda hidden_layers,
-                                            hidden_nodes, dropout, optimizer:
-                                            create_reg_nn( input_shape,
-                                            hidden_layers=hidden_layers,
-                                            hidden_nodes=hidden_nodes,
-                                            dropout=dropout,
-                                            optimizer=optimizer),
-                                            epochs=epochs,
-                                            batch_size=32,
-                                            verbose=0)
+            keras_regressor = KerasRegressor(
+                model=lambda hidden_layers,
+                             hidden_nodes,
+                             dropout,
+                             optimizer:
+                create_reg_nn(input_shape,
+                              hidden_layers=hidden_layers,
+                              hidden_nodes=hidden_nodes,
+                              dropout=dropout,
+                              optimizer=optimizer),
+                epochs=epochs,
+                batch_size=32,
+                verbose=0
+            )
             grid = GridSearchCV(estimator=keras_regressor,
                                 param_grid=param_grid,
                                 scoring='neg_mean_absolute_error',
-                                refit = False,
-                                cv = args.folds)
+                                refit=False,
+                                cv=args.folds
+                                )
+
             scaler = StandardScaler()
             x_scaled = scaler.fit_transform(features)
 
@@ -390,25 +399,26 @@ def neural_net_parsing():
             for mean, std, param in zip(means, stds, params):
                 logger.info(f"{mean} ({std}) with: {param}")
             model = create_reg_nn(input_shape,
-                                        hidden_layers =
-                                        grid_result.best_params_["model__hidden_layers"],
-                                        hidden_nodes
-                                        = grid_result.best_params_["model__hidden_nodes"],
-                                        optimizer =
-                                        grid_result.best_params_["model__optimizer"],
-                                        dropout = 
-                                        grid_result.best_params_['model__dropout'],
-                                        summary_flag = args.summary)
+                                  hidden_layers=
+                                  grid_result.best_params_["model__hidden_layers"],
+                                  hidden_nodes
+                                  =grid_result.best_params_["model__hidden_nodes"],
+                                  optimizer=
+                                  grid_result.best_params_["model__optimizer"],
+                                  dropout=
+                                  grid_result.best_params_['model__dropout'],
+                                  summary_flag=args.summary)
             training(features,
-                        targets,
-                        model,
-                        epochs,
-                        n_splits = args.folds,
-                        bins = args.bins,
-                        group = group,
-                        overs_flag = args.overs,
-                        hist_flag = args.history,
-                        plot_flag = args.plot)
+                     targets,
+                     model,
+                     epochs,
+                     n_splits=args.folds,
+                     bins=args.bins,
+                     group=group,
+                     overs_flag=args.overs,
+                     hist_flag=args.history,
+                     plot_flag=args.plot
+                     )
     except FileNotFoundError:
         logger.error("File not found.")
 
