@@ -57,7 +57,7 @@ def csv_reader(filename, column_name=None, show_flag=False):
         return df[column_name]
 
 
-def handle_spurious(df):
+def handle_spurious(df: pd.DataFrame) -> pd.DataFrame:
     """
     Handles spurious zeroes and -9999 values in the DataFrame.
     
@@ -90,6 +90,22 @@ def handle_spurious(df):
     # Remove all other rows containing dirty data
     df.dropna(inplace=True)
     return df
+
+
+def get_correlation(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates the correlation between features using by default the "Pearson"
+    method. Useful for reducing model complexity
+    Args:
+        df: Dataframe containing the features
+
+    Returns: A dataframe containing the correlation coefficient
+    of each feature against each other
+
+    """
+    # Drop the first column. Only numerical values accepted
+    correlation_dataframe = df.corr(numeric_only=True)
+    return correlation_dataframe
 
 
 def get_data(filename, target_col, ex_cols=0, **kwargs):
