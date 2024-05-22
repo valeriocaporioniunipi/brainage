@@ -21,14 +21,14 @@ def abs_path(local_filename, data_folder):
     :rtype: str
     
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))     # path of the code
-    
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # path of the code
+
     # Construct the absolute path to the data directory relative to the code directory
     data_dir = os.path.join(script_dir, "..", data_folder)
-    
+
     # Construct the absolute path to the data file
     data_file_path = os.path.join(data_dir, local_filename)
-    
+
     return data_file_path
 
 
@@ -66,12 +66,29 @@ def handle_spurious(df):
     :return: Cleaned DataFrame with spurious values handled
     :rtype: pd.DataFrame
     """
+
+    # Run this snippet to see what are columns having the worst values
+    for i in range(df.shape[1]):
+        for j in range(df.shape[0]):
+            value = df.iloc[j, i]
+            if value == -9999 or value == 0:
+                print(value, (i, j), df.columns[i])
+
+    # As manually observed, column "5th-Ventricle_Volume_mm3"
+    # seems to have quite dirty data, so we remove it
+    df.drop("5th-Ventricle_Volume_mm3", axis="columns", inplace=True)
+
     # Replace -9999 with NaN
     df.replace(-9999, np.nan, inplace=True)
     # Replace 0 with NaN
     df.replace(0, np.nan, inplace=True)
+
     # Fill NaN values with the mean of the respective columns
-    df.fillna(df.mean(), inplace=True)
+    # Temporarily disabled, first we have to make sure all entries are numbers
+    # df.fillna(df.mean(), inplace=True)
+
+    # Remove all other rows containing dirty data
+    df.dropna(inplace=True)
     return df
 
 
@@ -96,7 +113,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     site_col = kwargs.get('site_col', None)
     logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
     # Importing data from csv file as data
-    data = pd.read_csv(filename, delimiter = ';')
+    data = pd.read_csv(filename, delimiter=';')
     # 
     # if group_col is not None:
     #    data = data[data[group_col] == -1]
@@ -111,7 +128,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
         covars = data[[site_col]]
         covars.loc[:, site_col] = covars[site_col].str.rsplit('_', n=1).str[0]
         covars.rename(columns={site_col: 'SITE'}, inplace=True)  # Rename the column
-        _ , features = harmonizationLearn(features, covars)
+        _, features = harmonizationLearn(features, covars)
         logger.info('Harmonizing data with neuroHarmonize ')
 
     if len(features) != len(targets):
@@ -193,9 +210,9 @@ def oversampling(features, targets, **kwargs):
     """
     bins = kwargs.get('bins', 10)
     group = kwargs.get('group', None)
-    
+
     hist, edges = np.histogram(targets, bins=bins)
-    
+
     max_bin_index = np.argmax(hist)
     max_count = hist[max_bin_index]
 
@@ -211,7 +228,7 @@ def oversampling(features, targets, **kwargs):
         bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
         size = max_count
         sampled_indices = np.random.choice(bin_indices, size=size, replace=True)
-        
+
         oversampled_features.append(features[sampled_indices])
         oversampled_targets.append(targets[sampled_indices])
         if group is not None:
@@ -242,15 +259,19 @@ def csv_reader_parsing():
         python script.py show_column path/to/file.csv --column column_name
     """
     parser = argparse.ArgumentParser(description="CSV Reader "
-                                    "A tool to read CSV files with Pandas.")
-    parser.add_argument("command", choices=
-                        ["show", "show_column"],
-                        help="Choose the command to execute")
+                                                 "A tool to read CSV files with Pandas."
+                                     )
+    parser.add_argument("command",
+                        choices=["show", "show_column"],
+                        help="Choose the command to execute"
+                        )
     parser.add_argument("filename",
-                        help="Name of the CSV file")
+                        help="Name of the CSV file"
+                        )
     parser.add_argument("--column",
                         help="Name of the column to display or process"
-                        " (req. for 'show_column' commands)")
+                             " (req. for 'show_column' commands)"
+                        )
 
     args = parser.parse_args()
 
@@ -272,3 +293,7 @@ def csv_reader_parsing():
 
 if __name__ == "__main__":
     csv_reader_parsing()
+
+    # Uncomment for a rapid test
+    # df = csv_reader("../data/FS_features_ABIDE_males.csv")
+    # handle_spurious(df)
