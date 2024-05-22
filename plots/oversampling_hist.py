@@ -1,8 +1,5 @@
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from utils import get_data
+from brainage.utils import get_data
 
 
 _, targets = get_data(r'../data/FS_features_ABIDE_males_someGlobals.csv',
