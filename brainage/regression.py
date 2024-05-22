@@ -195,6 +195,9 @@ def reg_parsing():
                          help="Number of folds in the k-folding (>4, default 5)")
     parser.add_argument("--ex_cols", type = int, default = 5,
                          help="Number of columns excluded when importing (default 3)")
+    parser.add_argument("--overs", action = 'store_true', default = False,
+                        help="Oversampling, done in order to have"
+                        "a flat distribution of targets (default = False).")
     parser.add_argument("--plot", action="store_true",
                          help="Show the plot of actual vs predicted brain age")
     parser.add_argument("--group", default = 'DX_GROUP',
@@ -211,7 +214,8 @@ def reg_parsing():
                 features, targets, group = get_data(args.filename,
                                                     args.target,
                                                     args.ex_cols,
-                                                    group_col = args.group)
+                                                    group_col = args.group,
+                                                    overs = args.overs)
                 features_control = group_selection(features, group, -1)
                 targets_control = group_selection(targets, group, -1)
                 features_experimental = group_selection(features, group, 1)
