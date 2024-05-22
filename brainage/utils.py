@@ -3,7 +3,11 @@ import argparse
 import numpy as np
 import pandas as pd
 from loguru import logger
-from neuroHarmonize import harmonizationLearn, harmonizationApply
+from neuroHarmonize import harmonizationLearn
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
+from smogn import smoter # SmoteR for regression-oriented oversampling
 
 def abs_path(local_filename, data_folder):
     """
@@ -57,11 +61,11 @@ def csv_reader(filename, column_name=None, show_flag=False):
 
 def handle_spurious(df):
     """
-    Handles spurious zeroes and -9999 values in the DataFrame.
+    Handles spurious zero and -9999 values in the data.
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
-    :return: Cleaned DataFrame with spurious values handled
+    :return: Cleaned DataFrame
     :rtype: pd.DataFrame
     """
     # Replace -9999 with NaN
@@ -87,18 +91,19 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     :param kwargs: Additional keyword arguments:
                    - group_col: Name of the group column (optional).
                    - site_col: Name of the site column for harmonization (optional).
+                   -overs: Boolean flag in order to perform SmoteR oversampling (optional).
     :return: NumPy arrays of features, targets, and optionally the group.
     :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
     group_col = kwargs.get('group_col', None)
     site_col = kwargs.get('site_col', None)
+    overs = kwargs.get('overs', False)
     logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
     # Importing data from csv file as data
     data = pd.read_csv(filename, delimiter = ';')
-    # 
-    #if group_col is not None:
-    #    data = data[data[group_col] == -1]
-
+    if overs:
+        data = smoter(data, target_col)
+        logger.info('Oversampling performed with SmoteR')
     # Excluding the first ex_cols columns
     features_df = data.iloc[:, ex_cols:]
     # Removing spurious values from features and convertin to numpy matrix
@@ -123,28 +128,23 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # implicit else
     return features, targets
 
-def p_value_emp(arr1, arr2, permutations=100000):
+def p_value_emp(arr1, arr2, permutations=10000):
     '''
     Calculate the empirical p-value for the difference in means
-    between two groups using permutation testing.
+    between two groups using permutation testing. The empirical p-value is
+    the proportion of permuted differences in means that are greater than
+    or equal to the observed difference in means.
 
-    :param array-like arr1: Data for the first group.
-    :param array-like arr2: Data for the second group.
-    :param int permutations: Number of permutations to perform
-                                 for the permutation test. Default is 100,000.
+    :param arr1: Data for the first group.
+    :type arr1: ndarray
+    :param arr2: Data for the second group.
+    :type arr2: ndarray
+    :param permutations: Number of permutations to perform
+                                 for the permutation test (default = 10 000)
+    :type permutations: int
 
     :return: Empirically calculated p-value for the observed difference in means.
     :rtype: float
-
-    This function performs a permutation test to
-    estimate the empirical p-value for the difference in means between two groups.
-    The observed test statistic is the difference in means between arr2 and arr1.
-
-    The function generates permuted test statistics by randomly permuting
-    the data between the two groups and calculates the difference in means for each permutation.
-    The empirical p-value is then calculated as the proportion
-    of permuted differences in means that are greater than
-    or equal to the observed difference in means.
     '''
 
     # Observed test statistic (difference in means)
@@ -176,62 +176,42 @@ def p_value_emp(arr1, arr2, permutations=100000):
 
     return p_value
 
-
-def oversampling(features, targets, **kwargs):
-    """
-    Oversamples minority classes in the dataset to balance class distribution.
-
-    :param features: Feature array
-    :type features: numpy.ndarray
-    :param targets: Target array
-    :type targets: numpy.ndarray
-    :return: Oversampled features and targets arrays
-    :rtype: tuple(numpy.ndarray, numpy.ndarray)
-    """
-    bins = kwargs.get('bins', 10)
-    group = kwargs.get('group', None)
-    
-    hist, edges = np.histogram(targets, bins=bins)
-    
-    max_bin_index = np.argmax(hist)
-    max_count = hist[max_bin_index]
-
-    if max_count == 0:
-        raise ValueError("No samples available in the bin with the maximum count for oversampling. "
-                         "Adjust bin size or provide more data.")
-
-    oversampled_features = []
-    oversampled_targets = []
-    oversampled_group = [] if group is not None else None
-
-    for i in range(bins - 1):
-        bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
-        size = max_count
-        sampled_indices = np.random.choice(bin_indices, size=size, replace=True)
-        
-        oversampled_features.append(features[sampled_indices])
-        oversampled_targets.append(targets[sampled_indices])
-        if group is not None:
-            oversampled_group.append(group[sampled_indices])
-
-    new_features = np.concatenate(oversampled_features)
-    new_targets = np.concatenate(oversampled_targets)
-    new_group = np.concatenate(oversampled_group) if group is not None else None
-
-    if group is not None:
-        return new_features, new_targets, new_group
-    else:
-        return new_features, new_targets, None
-
 def group_selection(array, group, value):
     indices = np.where(group == value)[0]
     selected = array[indices]
     return selected
 
+def new_prediction(features, targets, model):
+    scaler = StandardScaler()
+    features = scaler.fit_transform(features)
+    y_pred = model.predict(features)
+    mae = mean_absolute_error(targets, y_pred)
+    r2 = r2_score(targets, y_pred)
+    print("Mean Absolute Error on exp:", mae)
+    print("R-squared on exp:", r2)
+
+    _, axa = plt.subplots(figsize=(10, 8))
+    target_range = [targets.min(), targets.max()]
+    # Plot the ideal line (y=x)
+    axa.plot(target_range, target_range, 'k--', lw=2)
+    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
+                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
+
+    # Set plot labels and title
+    axa.set_xlabel('Actual age [y]', fontsize = 20)
+    axa.set_ylabel('Predicted age [y]', fontsize = 20)
+    axa.set_title('Actual vs. predicted age - ASD', fontsize = 24)
+
+    # Add legend and grid to the plot
+    axa.legend(fontsize = 16)
+    axa.grid(False)
+    # plt.savefig('linear_reg_exp.png', transparent = True)
+    pad_new = y_pred.ravel()-targets
+    return pad_new
+
 def csv_reader_parsing():
     """
-    Command-line interface for reading and displaying CSV content,
-    or stripping everything after '_' in a specified column, and converting to canonical base.
+    Command-line interface for reading and displaying CSV content
     Example usage:
         python script.py show path/to/file.csv
         python script.py show_column path/to/file.csv --column column_name
@@ -246,17 +226,23 @@ def csv_reader_parsing():
     parser.add_argument("--column",
                         help="Name of the column to display or process"
                         " (req. for 'show_column' commands)")
+    parser.add_argument("--delimiter",
+                        help="Delimiter used in the CSV file")
 
     args = parser.parse_args()
 
     try:
+        df = pd.read_csv(args.filename, delimiter = args.delimiter)
         if args.command == "show":
-            csv_reader(args.filename, show_flag=True)
+            print(df)
+            return df
         elif args.command == "show_column":
             if not args.column:
                 parser.error("The '--column' argument is required for 'show_column' command.")
             else:
-                csv_reader(args.filename, args.column, show_flag=True)
+                column_df = df[[args.column]]
+                print(column_df)
+                return column_df
         else:
             logger.error("No command was given ")
     except FileNotFoundError as e:
