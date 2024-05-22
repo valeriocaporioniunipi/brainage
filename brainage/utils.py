@@ -105,6 +105,12 @@ def get_correlation(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Drop the first column. Only numerical values accepted
     correlation_dataframe = df.corr(numeric_only=True)
+
+    # Look for high correlated features
+    for i, column in enumerate(correlation_dataframe.columns):
+        value = correlation_dataframe[column].iat[0]
+        if abs(value) > 0.5:
+            print(column, i, value)
     return correlation_dataframe
 
 
@@ -130,14 +136,15 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
     # Importing data from csv file as data
     data = pd.read_csv(filename, delimiter=';')
-    # 
+    data = handle_spurious(data)
+
     # if group_col is not None:
     #    data = data[data[group_col] == -1]
 
     # Excluding the first ex_cols columns
     features_df = data.iloc[:, ex_cols:]
-    # Removing spurious values from features and convertin to numpy matrix
-    features = handle_spurious(features_df).values
+    # Removing spurious values from features and convert in to numpy matrix
+    features = features_df.values
     # Target array (numpy.ndarray)
     targets = data[target_col].values
     if site_col in data.columns:
