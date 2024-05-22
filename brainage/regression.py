@@ -5,15 +5,19 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import ConstantKernel as C, Matern
+from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 from pathlib import Path
 
 from utils import abs_path, get_data, p_value_emp, group_selection
 
 
-
-def linear_reg(features, targets, n_splits):
+@ignore_warnings(category=ConvergenceWarning)
+def regression(type, features, targets, n_splits):
 
     """
     linear_reg performs linear regression with k-fold cross-validation on the
@@ -54,10 +58,16 @@ def linear_reg(features, targets, n_splits):
         x_train = scaler.fit_transform(x_train)
         x_test = scaler.transform(x_test)
 
-        # Initialize and fit linear regression model
-        model = LinearRegression()
-        model.fit(x_train, y_train)
-
+        if type == "linear":
+            # Initialize and fit linear regression model
+            model = LinearRegression()
+            model.fit(x_train, y_train)
+        elif type == "gaussian":
+            # Initialize and fit linear regression model
+            kernel = C(1.0, (1, 1e2)) * Matern(length_scale=1.0, length_scale_bounds=(1, 1e2))
+            model = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer = 5)
+            model.fit(x_train, y_train)
+            
         # Predict on the test set
         y_pred = model.predict(x_test)
 
@@ -80,7 +90,6 @@ def linear_reg(features, targets, n_splits):
     print("Mean Absolute Error on control:", mae)
     print("R-squared on control:", r2)
 
-
     target_range = [targets.min(), targets.max()]
     # Plotting the ideal line (y=x)
     axc.plot(target_range, target_range, 'k--', lw=2)
@@ -97,7 +106,7 @@ def linear_reg(features, targets, n_splits):
     
     return best_model, mae, r2, pad_control
 
-def lin_ads_prediction(features, targets, model):
+def ads_prediction(features, targets, model):
     scaler = StandardScaler()
     features = scaler.fit_transform(features)
     y_pred = model.predict(features)
@@ -125,7 +134,7 @@ def lin_ads_prediction(features, targets, model):
     pad_ads = y_pred.ravel()-targets
     return pad_ads
 
-def linear_reg_parsing():
+def reg_parsing():
     """
     linear_reg function parsed that runs when the .py file is called.
     It performs a  linear regression with k-fold cross-validation
@@ -175,6 +184,9 @@ def linear_reg_parsing():
     parser.add_argument("filename",
                          help="Name of the file that has to be analized if --location argument is"
                         " passed. Otherwise pass to filename the absolutepath of the file")
+    parser.add_argument("type",
+                         help="Type of regression model that could be implemented. Could be 'l' for"
+                         "linear regression or 'g' for gaussian regression")
     parser.add_argument("--target", default = "AGE_AT_SCAN",
                         help="Name of the column holding target values")
     parser.add_argument("--location",
@@ -191,30 +203,35 @@ def linear_reg_parsing():
     args = parser.parse_args()
 
     if args.folds > 4:
-        try:
-            args.filename = abs_path(args.filename,
-                                    args.location) if args.location else args.filename
-            logger.info(f"Opening file : {args.filename}")
-            features, targets, group = get_data(args.filename,
-                                                args.target,
-                                                args.ex_cols,
-                                                group_col = args.group)
-            features_control = group_selection(features, group, -1)
-            targets_control = group_selection(targets, group, -1)
-            features_experimental = group_selection(features, group, 1)
-            targets_experimental = group_selection(targets, group, 1)
-            model, _, _, pad_control = linear_reg(features_control, targets_control, args.folds)
-            pad_ads = lin_ads_prediction(features_experimental, targets_experimental, model)
-            p_value_emp(pad_control, pad_ads)
-            if args.plot:
-                plt.show()
-            else:
-                logger.info('Skipping plots')
-        except FileNotFoundError:
-            logger.error("File not found.")
+        if args.type == "linear" or args.type == "gaussian": 
+            try:
+                args.filename = abs_path(args.filename,
+                                        args.location) if args.location else args.filename
+                logger.info(f"Opening file : {args.filename}")
+                features, targets, group = get_data(args.filename,
+                                                    args.target,
+                                                    args.ex_cols,
+                                                    group_col = args.group)
+                features_control = group_selection(features, group, -1)
+                targets_control = group_selection(targets, group, -1)
+                features_experimental = group_selection(features, group, 1)
+                targets_experimental = group_selection(targets, group, 1)
+                model, _, _, pad_control = regression(args.type, features_control,
+                                                    targets_control, args.folds)
+                pad_ads = ads_prediction(features_experimental, targets_experimental, model)
+                p_value_emp(pad_control, pad_ads)
+                if args.plot:
+                    plt.show()
+                else:
+                    logger.info('Skipping plots')
+            except FileNotFoundError:
+                logger.error("File not found.")
+        else:
+            logger.error("Such regression model doesn't exist or it's not implemented. "
+            "Please select a valid regression model")
     else:
         logger.error("Invalid number of folds: at least 5 folds required.")
 
 
 if __name__ == "__main__":
-    linear_reg_parsing()
+    reg_parsing()

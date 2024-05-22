@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
-from matplotlib import pyplot as plt
-import sys
 import os
+import sys
 
 # Ottieni il percorso assoluto della directory che contiene il file corrente
 current_dir = os.path.dirname(__file__)
@@ -13,11 +12,26 @@ brainage_dir = os.path.abspath(os.path.join(current_dir, '..', 'brainage'))
 # Aggiungi 'brainage' al percorso di ricerca dei moduli
 sys.path.insert(0, brainage_dir)
 
-from brainage.gaussian_reg import gaussian_reg
+from brainage.regression import regression
+from brainage.regression import regression
 
-class BasicGaussianRegression(unittest.TestCase):
+class BasicRegression(unittest.TestCase):
 
-    def test_gaussian_reg(self):
+    def test_linear_regression(self):
+
+        features = np.linspace(0,100,10) #Initialization of a vector with 10 elements
+
+        #Creation of a matrix with 10 rows and 11 columns
+        for i in range(10):
+            features = np.vstack([features, np.linspace(i+1, 100-i-1, 10)])
+
+        #Target array 
+        target = np.array(np.linspace(30,60,11))
+
+        _, _, r2, _ = regression("linear", features, target, 5)
+        self.assertAlmostEqual(r2, 1, places=2)
+
+    def test_gaussian_regression(self):
 
         def gaussfunction(x, m, v):
             return (np.exp((-0.5)*(((x-m)/v)**2)))/(np.sqrt(2*np.pi*(v**2)))
@@ -38,5 +52,5 @@ class BasicGaussianRegression(unittest.TestCase):
         features = data[:, :-1]
         target = data[:, -1]
 
-        _, _, r2 = gaussian_reg(features, target, 5, False)
+        _, _, r2, _ = regression("gaussian",features, target, 5)
         self.assertAlmostEqual(r2, 1, places=2)
