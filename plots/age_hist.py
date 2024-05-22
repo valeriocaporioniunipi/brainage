@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 # Extraction of data as pandas dataframe
-data = pd.read_csv(r'../data/FS_features_ABIDE_males.csv', delimiter=';')
+data = pd.read_csv(r'../data/abide.csv', delimiter=';')
 data['SITE'] = data['FILE_ID'].str.split('_').str[0]
 
 age_by_site = {}
