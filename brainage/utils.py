@@ -7,7 +7,8 @@ from neuroHarmonize import harmonizationLearn
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
-from smogn import smoter # SmoteR for regression-oriented oversampling
+from smogn import smoter  # SmoteR for regression-oriented oversampling
+
 
 def abs_path(local_filename, data_folder):
     """
@@ -24,14 +25,14 @@ def abs_path(local_filename, data_folder):
     :rtype: str
     
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))     # path of the code
-    
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # path of the code
+
     # Construct the absolute path to the data directory relative to the code directory
     data_dir = os.path.join(script_dir, "..", data_folder)
-    
+
     # Construct the absolute path to the data file
     data_file_path = os.path.join(data_dir, local_filename)
-    
+
     return data_file_path
 
 
@@ -59,21 +60,39 @@ def csv_reader(filename, column_name=None, show_flag=False):
             print(df[column_name])
         return df[column_name]
 
+
 def handle_spurious(df):
     """
-    Handles spurious zero and -9999 values in the data.
-    
+    Handles spurious zeroes and -9999 values in the DataFrame.
+
     :param df: Input DataFrame
     :type df: pd.DataFrame
-    :return: Cleaned DataFrame
+    :return: Cleaned DataFrame with spurious values handled
     :rtype: pd.DataFrame
     """
+
+    # Run this snippet to see what are columns having the worst values
+    for i in range(df.shape[1]):
+        for j in range(df.shape[0]):
+            value = df.iloc[j, i]
+            if value == -9999 or value == 0:
+                print(value, (i, j), df.columns[i])
+
+    # As manually observed, column "5th-Ventricle_Volume_mm3"
+    # seems to have quite dirty data, so we remove it
+    df.drop("5th-Ventricle_Volume_mm3", axis="columns", inplace=True)
+
     # Replace -9999 with NaN
     df.replace(-9999, np.nan, inplace=True)
     # Replace 0 with NaN
     df.replace(0, np.nan, inplace=True)
+
     # Fill NaN values with the mean of the respective columns
-    df.fillna(df.mean(), inplace=True)
+    # Temporarily disabled, first we have to make sure all entries are numbers
+    # df.fillna(df.mean(), inplace=True)
+
+    # Remove all other rows containing dirty data
+    df.dropna(inplace=True)
     return df
 
 
@@ -100,7 +119,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     overs = kwargs.get('overs', False)
     logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
     # Importing data from csv file as data
-    data = pd.read_csv(filename, delimiter = ';')
+    data = pd.read_csv(filename, delimiter=';')
     if overs:
         data = smoter(data, target_col)
         logger.info('Oversampling performed with SmoteR')
@@ -114,7 +133,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
         covars = data[[site_col]]
         covars.loc[:, site_col] = covars[site_col].str.rsplit('_', n=1).str[0]
         covars.rename(columns={site_col: 'SITE'}, inplace=True)  # Rename the column
-        _ , features = harmonizationLearn(features, covars)
+        _, features = harmonizationLearn(features, covars)
         logger.info('Harmonizing data with neuroHarmonize ')
 
     if len(features) != len(targets):
@@ -127,6 +146,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
         return features, targets, group
     # implicit else
     return features, targets
+
 
 def p_value_emp(arr1, arr2, permutations=10000):
     '''
@@ -176,10 +196,12 @@ def p_value_emp(arr1, arr2, permutations=10000):
 
     return p_value
 
+
 def group_selection(array, group, value):
     indices = np.where(group == value)[0]
     selected = array[indices]
     return selected
+
 
 def new_prediction(features, targets, model):
     scaler = StandardScaler()
@@ -194,20 +216,21 @@ def new_prediction(features, targets, model):
     target_range = [targets.min(), targets.max()]
     # Plot the ideal line (y=x)
     axa.plot(target_range, target_range, 'k--', lw=2)
-    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
-                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
+    axa.scatter(targets, y_pred, color='k', alpha=0.5,
+                label=f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
 
     # Set plot labels and title
-    axa.set_xlabel('Actual age [y]', fontsize = 20)
-    axa.set_ylabel('Predicted age [y]', fontsize = 20)
-    axa.set_title('Actual vs. predicted age - ASD', fontsize = 24)
+    axa.set_xlabel('Actual age [y]', fontsize=20)
+    axa.set_ylabel('Predicted age [y]', fontsize=20)
+    axa.set_title('Actual vs. predicted age - ASD', fontsize=24)
 
     # Add legend and grid to the plot
-    axa.legend(fontsize = 16)
+    axa.legend(fontsize=16)
     axa.grid(False)
     # plt.savefig('linear_reg_exp.png', transparent = True)
-    pad_new = y_pred.ravel()-targets
+    pad_new = y_pred.ravel() - targets
     return pad_new
+
 
 def csv_reader_parsing():
     """
@@ -217,22 +240,22 @@ def csv_reader_parsing():
         python script.py show_column path/to/file.csv --column column_name
     """
     parser = argparse.ArgumentParser(description="CSV Reader "
-                                    "A tool to read CSV files with Pandas.")
+                                                 "A tool to read CSV files with Pandas.")
     parser.add_argument("command", choices=
-                        ["show", "show_column"],
+    ["show", "show_column"],
                         help="Choose the command to execute")
     parser.add_argument("filename",
                         help="Name of the CSV file")
     parser.add_argument("--column",
                         help="Name of the column to display or process"
-                        " (req. for 'show_column' commands)")
+                             " (req. for 'show_column' commands)")
     parser.add_argument("--delimiter",
                         help="Delimiter used in the CSV file")
 
     args = parser.parse_args()
 
     try:
-        df = pd.read_csv(args.filename, delimiter = args.delimiter)
+        df = pd.read_csv(args.filename, delimiter=args.delimiter)
         if args.command == "show":
             print(df)
             return df
@@ -250,5 +273,10 @@ def csv_reader_parsing():
     except KeyError as e:
         logger.error(f"Column '{args.column}' not found in the CSV file: {e}")
 
+
 if __name__ == "__main__":
     csv_reader_parsing()
+
+    # Uncomment for a rapid test
+    # df = csv_reader("../data/FS_features_ABIDE_males.csv")
+    # handle_spurious(df)
