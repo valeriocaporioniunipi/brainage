@@ -255,7 +255,7 @@ def neural_net_parsing():
                          help="Number of folds in the k-folding (>4, default 5)")
     parser.add_argument("--dropout", type = float, default = 0.05,
                          help="Dropout rate in the NN (default 0.05)")
-    parser.add_argument("--ex_cols", type = int, default = 3,
+    parser.add_argument("--ex_cols", type = int, default = 5,
                          help="Number of columns excluded when importing (default 3)")
     parser.add_argument("--summary", action="store_true",
                          help="Show the summary of the neural network")
@@ -265,7 +265,7 @@ def neural_net_parsing():
                         help="Name of the column indicating the group (experimental vs control)")
     parser.add_argument("--overs", action = 'store_true', default = False,
                         help="Oversampling, done in order to have"
-                        "a flat distribution of targets (default = True).")
+                        "a flat distribution of targets (default = False).")
     parser.add_argument("--harm",
                         help="Name of the column of sites, used for data harmonization")
     parser.add_argument("--grid", action = "store_true",

@@ -91,6 +91,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     :param kwargs: Additional keyword arguments:
                    - group_col: Name of the group column (optional).
                    - site_col: Name of the site column for harmonization (optional).
+                   -overs: Boolean flag in order to perform SmoteR oversampling (optional).
     :return: NumPy arrays of features, targets, and optionally the group.
     :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
