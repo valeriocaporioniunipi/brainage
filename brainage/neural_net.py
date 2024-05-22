@@ -189,9 +189,6 @@ def training(features, targets, model, epochs, **kwargs):
     axp.grid(False)
     return best_model, mae, r2, pad_control
 
-
-
-
 def neural_net_parsing():
     """
     neural_net_parsing executes the parsing from terminal
