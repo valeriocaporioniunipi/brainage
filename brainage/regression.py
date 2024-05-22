@@ -11,9 +11,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
-from pathlib import Path
 
-from utils import abs_path, get_data, p_value_emp, group_selection
+from utils import abs_path, get_data, p_value_emp, group_selection, new_prediction
 
 
 @ignore_warnings(category=ConvergenceWarning)
@@ -106,33 +105,6 @@ def regression(type, features, targets, n_splits):
     
     return best_model, mae, r2, pad_control
 
-def ads_prediction(features, targets, model):
-    scaler = StandardScaler()
-    features = scaler.fit_transform(features)
-    y_pred = model.predict(features)
-    mae = mean_absolute_error(targets, y_pred)
-    r2 = r2_score(targets, y_pred)
-    print("Mean Absolute Error on exp:", mae)
-    print("R-squared on exp:", r2)
-
-    _, axa = plt.subplots(figsize=(10, 8))
-    target_range = [targets.min(), targets.max()]
-    # Plot the ideal line (y=x)
-    axa.plot(target_range, target_range, 'k--', lw=2)
-    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
-                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
-
-    # Set plot labels and title
-    axa.set_xlabel('Actual age [y]', fontsize = 20)
-    axa.set_ylabel('Predicted age [y]', fontsize = 20)
-    axa.set_title('Actual vs. predicted age - ASD', fontsize = 24)
-
-    # Add legend and grid to the plot
-    axa.legend(fontsize = 16)
-    axa.grid(False)
-    # plt.savefig('linear_reg_exp.png', transparent = True)
-    pad_ads = y_pred.ravel()-targets
-    return pad_ads
 
 def reg_parsing():
     """
@@ -222,7 +194,7 @@ def reg_parsing():
                 targets_experimental = group_selection(targets, group, 1)
                 model, _, _, pad_control = regression(args.type, features_control,
                                                     targets_control, args.folds)
-                pad_ads = ads_prediction(features_experimental, targets_experimental, model)
+                pad_ads = new_prediction(features_experimental, targets_experimental, model)
                 p_value_emp(pad_control, pad_ads)
                 if args.plot:
                     plt.show()
