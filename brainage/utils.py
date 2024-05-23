@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from neuroHarmonize import harmonizationLearn, harmonizationApply
-
+from smogn import smoter # SmoteR for regression-oriented oversampling
 
 def abs_path(local_filename, data_folder):
     """
@@ -57,6 +57,22 @@ def csv_reader(filename, column_name=None, show_flag=False):
             print(df[column_name])
         return df[column_name]
 
+def mean_spurious(df):
+    """
+    Handles spurious zero and -9999 values in the data.
+    
+    :param df: Input DataFrame
+    :type df: pd.DataFrame
+    :return: Cleaned DataFrame
+    :rtype: pd.DataFrame
+    """
+    # Replace -9999 with NaN
+    df.replace(-9999, np.nan, inplace=True)
+    # Replace 0 with NaN
+    df.replace(0, np.nan, inplace=True)
+    # Fill NaN values with the mean of the respective columns
+    df.fillna(df.mean(), inplace=True)
+    return df
 
 def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
     """
@@ -221,15 +237,20 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     :param kwargs: Additional keyword arguments:
                    - group_col: Name of the group column (optional).
                    - site_col: Name of the site column for harmonization (optional).
+                   -overs: Boolean flag in order to perform SmoteR oversampling (optional).
     :return: NumPy arrays of features, targets, and optionally the group.
     :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
     group_col = kwargs.get('group_col', None)
     site_col = kwargs.get('site_col', None)
+    overs = kwargs.get('overs', False)
     logger.info(f'Reading {os.path.basename(filename)} with {target_col} as target column')
     # Importing data from csv file as data
-    data = pd.read_csv(filename, delimiter=';')
-    data = handle_spurious(data)
+    data = pd.read_csv(filename, delimiter = ';')
+    if overs:
+        data = smoter(data, target_col)
+        logger.info('Oversampling performed with SmoteR')
+    #data = mean_spurious(data)
 
     # if group_col is not None:
     #    data = data[data[group_col] == -1]
@@ -237,7 +258,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # Excluding the first ex_cols columns
     features_df = data.iloc[:, ex_cols:]
     # Removing spurious values from features and convert in to numpy matrix
-    features = features_df.values
+    features = mean_spurious(features_df).values
     # Target array (numpy.ndarray)
     targets = data[target_col].values
     if site_col in data.columns:
@@ -408,10 +429,16 @@ def csv_reader_parsing():
 
 
 if __name__ == "__main__":
-    csv_reader_parsing()
+    #csv_reader_parsing()
 
     # Uncomment for a rapid test
+<<<<<<< Updated upstream
     # df = csv_reader("../data/abide.csv")
     # check_site_correlation(df).to_excel("site_correlation.xlsx")
     # df = handle_spurious(df)
     # check_site_correlation(df).to_excel("site_correlation_no_spurious.xlsx")
+=======
+    df = csv_reader("../data/abide.csv")
+    # handle_spurious(df)
+    get_correlation(df)
+>>>>>>> Stashed changes
