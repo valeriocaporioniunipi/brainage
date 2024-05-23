@@ -201,6 +201,8 @@ def check_site_correlation(df: pd.DataFrame) -> pd.DataFrame:
                 if site in df[site_column].iat[i]:
                     temp_feature_value.append(df[feature].iat[i])
             dtfSiteFeatures[site][feature] = np.mean(temp_feature_value)
+            # Resets the array
+            temp_feature_value = []
 
     return dtfSiteFeatures
 
@@ -410,3 +412,6 @@ if __name__ == "__main__":
 
     # Uncomment for a rapid test
     # df = csv_reader("../data/abide.csv")
+    # check_site_correlation(df).to_excel("site_correlation.xlsx")
+    # df = handle_spurious(df)
+    # check_site_correlation(df).to_excel("site_correlation_no_spurious.xlsx")
