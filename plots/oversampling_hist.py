@@ -12,17 +12,18 @@ _, targets_os = get_data(r'../data/abide_globals.csv',
 plt.figure(figsize=(10, 6))
 
 plt.hist(targets, bins=30, color='blue',
-         alpha=0.5, edgecolor='black', label='Original targets')
+         alpha=0.5, edgecolor=None, label='Original targets')
 
 plt.hist(targets_os, bins=30, color='green',
-         alpha=0.5, edgecolor='black', label='Oversampled targets')
+         alpha=0.5, edgecolor=None, label='Oversampled targets')
 
-plt.title('Oversampling on ages')
-plt.xlabel('Age')
-plt.ylabel('Occurrences')
+plt.title('Oversampling on ages', fontsize = 28)
+plt.xlabel('Age', fontsize = 24)
+plt.ylabel('Occurrences', fontsize = 24)
 
-plt.legend()
+plt.legend(fontsize = 20)
 
+plt.savefig('oversampling_hist.png', transparent = True)
 plt.show()
 
 
