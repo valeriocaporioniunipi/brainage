@@ -1,5 +1,6 @@
 import os
 import argparse
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -57,7 +58,36 @@ def csv_reader(filename, column_name=None, show_flag=False):
         return df[column_name]
 
 
-def handle_spurious(df: pd.DataFrame) -> pd.DataFrame:
+def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
+    """
+    Run this snippet to see what are columns having the dirtiest values
+    Args:
+        df: Initial dataframe containing extracted features
+        show: Whether to show the dataframe
+
+    Returns: Dataframe containing the names of columns with the most dirty data
+    and counter of dirty data.
+
+    """
+    # Store a counter of instances of missing data for each feature
+    dctSpurious = defaultdict(int)
+    for i in range(df.shape[1]):
+        for j in range(df.shape[0]):
+            value = df.iloc[j, i]
+            if value == -9999 or value == 0:
+                dctSpurious[df.columns[i]] += 1
+
+    # Create a pandas dataframe with the gathered data and
+    dtfSpurious = pd.DataFrame([dctSpurious.keys(),
+                                dctSpurious.values()])
+    dtfSpurious = dtfSpurious.transpose()
+    dtfSpurious.columns = ["Feature name", "Number of missing values"]
+    if show:
+        print(dtfSpurious)
+    return dtfSpurious
+
+
+def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
     """
     Handles spurious zeroes and -9999 values in the DataFrame.
     
@@ -65,18 +95,19 @@ def handle_spurious(df: pd.DataFrame) -> pd.DataFrame:
     :type df: pd.DataFrame
     :return: Cleaned DataFrame with spurious values handled
     :rtype: pd.DataFrame
-    """
 
-    # Run this snippet to see what are columns having the worst values
-    for i in range(df.shape[1]):
-        for j in range(df.shape[0]):
-            value = df.iloc[j, i]
-            if value == -9999 or value == 0:
-                print(value, (i, j), df.columns[i])
+    Args:
+        *args (str): Names of columns to remove
+    """
 
     # As manually observed, column "5th-Ventricle_Volume_mm3"
     # seems to have quite dirty data, so we remove it
     df.drop("5th-Ventricle_Volume_mm3", axis="columns", inplace=True)
+    for arg in args:
+        if isinstance(arg, str):
+            df.drop(arg, axis="columns", inplace=True)
+        else:
+            print("Invalid argument!")
 
     # Replace -9999 with NaN
     df.replace(-9999, np.nan, inplace=True)
@@ -89,29 +120,89 @@ def handle_spurious(df: pd.DataFrame) -> pd.DataFrame:
 
     # Remove all other rows containing dirty data
     df.dropna(inplace=True)
+
     return df
 
 
-def get_correlation(df: pd.DataFrame) -> pd.DataFrame:
+def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
     """
     Calculates the correlation between features using by default the "Pearson"
     method. Useful for reducing model complexity
     Args:
         df: Dataframe containing the features
+        threshold: Sets the correlation threshold considered significant
 
     Returns: A dataframe containing the correlation coefficient
-    of each feature against each other
+    of each feature against the others if above the threshold.
 
     """
     # Drop the first column. Only numerical values accepted
     correlation_dataframe = df.corr(numeric_only=True)
 
     # Look for high correlated features
-    for i, column in enumerate(correlation_dataframe.columns):
-        value = correlation_dataframe[column].iat[0]
-        if abs(value) > 0.5:
-            print(column, i, value)
-    return correlation_dataframe
+    # List containing info on correlated features
+    lstCorrelated = []
+    # Iterate over the correlation matrix and check if there are correlation values over the user-set
+    # threshold, and, if there are aby, add them to a dataframe
+    for i in range(correlation_dataframe.shape[0]):
+        for column in correlation_dataframe.columns:
+            value = correlation_dataframe[column].iat[i]
+            if abs(value) > threshold:
+                if value != 1:
+                    # column is the name of the feature
+                    # correlation_dataframe.index[i] is the feature comparing against
+                    # value is the correlation coefficient between the above
+                    lstCorrelated.append([column,
+                                          correlation_dataframe.index[i],
+                                          value]
+                                         )
+    # Create the dataframe
+    dtfHighlyCorrelated = pd.DataFrame(lstCorrelated)
+    dtfHighlyCorrelated.columns = ["Feature", "Against-feature", "corr-value"]
+
+    return dtfHighlyCorrelated
+
+
+def check_site_correlation(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Check if there are features influenced by the site where the image got shot.
+    Checks whether the mean of each feature is similar across sites. If it's not, then there's bias in
+    the image acquisition.
+
+    Args:
+        df: Pandas dataframe containing all the features labeled according the site of origin.
+
+    Returns:
+        A pandas dataframe containing the mean of each feature calculated separately for each site.
+
+    """
+
+    df_length = df.shape[0]
+    # Iterate over the df and save in a list all site names
+    lstSiteNames = []
+    site_column = df.columns[0]
+    for i in range(df_length):
+        site_name = df[site_column].iat[i]
+        site_name = site_name.split("_")[0]
+        if site_name not in lstSiteNames:
+            lstSiteNames.append(site_name)
+
+    # Data structure for storing mean values
+    dtfSiteFeatures = pd.DataFrame(np.zeros((len(df.columns[1:]), len(lstSiteNames))),
+                                   index=df.columns[1:],
+                                   columns=lstSiteNames)
+
+    # Calculate the mean of each feature for each site separately.
+    # Slow asf, needs refactoring.
+    temp_feature_value = []
+    for site in lstSiteNames:
+        for feature in df.columns[1:]:
+            for i in range(df_length):
+                if site in df[site_column].iat[i]:
+                    temp_feature_value.append(df[feature].iat[i])
+            dtfSiteFeatures[site][feature] = np.mean(temp_feature_value)
+
+    return dtfSiteFeatures
 
 
 def get_data(filename, target_col, ex_cols=0, **kwargs):
@@ -318,5 +409,4 @@ if __name__ == "__main__":
     csv_reader_parsing()
 
     # Uncomment for a rapid test
-    # df = csv_reader("../data/FS_features_ABIDE_males.csv")
-    # handle_spurious(df)
+    # df = csv_reader("../data/abide.csv")
