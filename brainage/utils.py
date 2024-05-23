@@ -163,6 +163,48 @@ def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
     return dtfHighlyCorrelated
 
 
+def check_site_correlation(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Check if there are features influenced by the site where the image got shot.
+    Checks whether the mean of each feature is similar across sites. If it's not, then there's bias in
+    the image acquisition.
+
+    Args:
+        df: Pandas dataframe containing all the features labeled according the site of origin.
+
+    Returns:
+        A pandas dataframe containing the mean of each feature calculated separately for each site.
+
+    """
+
+    df_length = df.shape[0]
+    # Iterate over the df and save in a list all site names
+    lstSiteNames = []
+    site_column = df.columns[0]
+    for i in range(df_length):
+        site_name = df[site_column].iat[i]
+        site_name = site_name.split("_")[0]
+        if site_name not in lstSiteNames:
+            lstSiteNames.append(site_name)
+
+    # Data structure for storing mean values
+    dtfSiteFeatures = pd.DataFrame(np.zeros((len(df.columns[1:]), len(lstSiteNames))),
+                                   index=df.columns[1:],
+                                   columns=lstSiteNames)
+
+    # Calculate the mean of each feature for each site separately.
+    # Slow asf, needs refactoring.
+    temp_feature_value = []
+    for site in lstSiteNames:
+        for feature in df.columns[1:]:
+            for i in range(df_length):
+                if site in df[site_column].iat[i]:
+                    temp_feature_value.append(df[feature].iat[i])
+            dtfSiteFeatures[site][feature] = np.mean(temp_feature_value)
+
+    return dtfSiteFeatures
+
+
 def get_data(filename, target_col, ex_cols=0, **kwargs):
     """
     Obtains the features and target arrays from a CSV file. Optionally harmonizes the data 
