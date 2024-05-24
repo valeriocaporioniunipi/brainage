@@ -1,1 +1,12 @@
 furo==2021.11.16
+
+numpy == 1.26.2
+matplotlib
+pandas
+tensorflow
+scikit-learn
+scikeras
+sphinx == 7.3.7
+loguru
+smogn
+neuroHarmonize
