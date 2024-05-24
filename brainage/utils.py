@@ -4,6 +4,9 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from loguru import logger
+from matplotlib import pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
 from neuroHarmonize import harmonizationLearn, harmonizationApply
 from smogn import smoter # SmoteR for regression-oriented oversampling
 
