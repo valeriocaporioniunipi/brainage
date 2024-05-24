@@ -28,8 +28,8 @@ for patch in bp['boxes']:
     patch.set_facecolor(mcolors.to_rgba('royalblue', alpha=0.7))
 
 ax.set_xticklabels(sorted_sites, fontsize = 14, rotation = 45)
-ax.set_xlabel('Site', fontsize = 20)
-ax.set_ylabel('Age [years]', fontsize = 20)
+ax.set_xlabel('Site', fontsize = 24)
+ax.set_ylabel('Age [years]', fontsize = 24)
 ax.grid(False)
 
 ax_hist = ax.twiny() # for the histogram
