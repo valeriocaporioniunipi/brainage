@@ -133,8 +133,8 @@ def reg_parsing():
 
         $Your_PC>python linear_reg.py file.csv --folds 10  
 
-    :param filename: path to the CSV file containing
-    the dataset or the name of the file if --location argument is passed 
+    :param filename: path to the CSV file containing 
+        the dataset or the name of the file if --location argument is passed 
     :type filename: str
     :param target: optional (default = AGE_AT_SCAN): Name of the column holding target values
     :type target: str
