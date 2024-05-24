@@ -61,9 +61,10 @@ def csv_reader(filename, column_name=None, show_flag=False):
             print(df[column_name])
         return df[column_name]
 
+
 def mean_spurious(df):
     """
-    Handles spurious zero and -9999 values in the data.
+    Handles spurious 0 and -9999 values in the data, if the dataset is not properly cleaned before.
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
@@ -78,12 +79,15 @@ def mean_spurious(df):
     df.fillna(df.mean(), inplace=True)
     return df
 
+
 def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
     """
-    Run this snippet to see what are columns having the dirtiest values
-    Args:
-        df: Initial dataframe containing extracted features
-        show: Whether to show the dataframe
+    Run this snippet to see what are columns with invalid values 0 or -9999
+    
+    :param df: Input dataframe containing extracted features
+    :type df: pd.DataFrame
+    :param show: Whether to show the dataset, default = False
+    :type show: Bool
 
     Returns: Dataframe containing the names of columns with the most dirty data
     and counter of dirty data.
@@ -109,7 +113,8 @@ def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
 
 def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
     """
-    Handles spurious zeroes and -9999 values in the DataFrame.
+    Handles spurious 0 and -9999 values in the DataFrame: whenever such a 
+    value is found, the row (patient) is excluded form the data.
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
@@ -120,9 +125,6 @@ def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
         *args (str): Names of columns to remove
     """
 
-    # As manually observed, column "5th-Ventricle_Volume_mm3"
-    # seems to have quite dirty data, so we remove it
-    df.drop("5th-Ventricle_Volume_mm3", axis="columns", inplace=True)
     for arg in args:
         if isinstance(arg, str):
             df.drop(arg, axis="columns", inplace=True)
@@ -163,7 +165,7 @@ def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
     # List containing info on correlated features
     lstCorrelated = []
     # Iterate over the correlation matrix and check if there are correlation values over the user-set
-    # threshold, and, if there are aby, add them to a dataframe
+    # threshold and add the respective features to a dataframe
     for i in range(correlation_dataframe.shape[0]):
         for column in correlation_dataframe.columns:
             value = correlation_dataframe[column].iat[i]
@@ -261,8 +263,9 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
 
     # Excluding the first ex_cols columns
     features_df = data.iloc[:, ex_cols:]
-    # Removing spurious values from features and convert in to numpy matrix
-    features = mean_spurious(features_df).values
+    # Convert in to numpy matrix
+    features_df = mean_spurious(features_df) # Removing (hopefully absent) spurious values
+    features = features_df.values
     # Target array (numpy.ndarray)
     targets = data[target_col].values
     if site_col in data.columns:
@@ -544,16 +547,20 @@ def mean_values_on_site(filename, targets, group, ex_cols, model):
         return appended_pad, mean_pad, mean_mae, mean_r2
 
 if __name__ == "__main__":
-    #csv_reader_parsing()
+    csv_reader_parsing()
 
     # Uncomment for a rapid test
-
+    
     # df = csv_reader("../data/abide.csv")
-    # check_site_correlation(df).to_excel("site_correlation.xlsx")
-    # df = handle_spurious(df)
-    # check_site_correlation(df).to_excel("site_correlation_no_spurious.xlsx")
-
+    # check_for_spurious(df, show = True)
+    # check_site_correlation(df).to_csv("../data/site_correlation.csv")
+    # df = handle_spurious(df, "FIQ",
+    #                      "Left-vessel_Volume_mm3",
+    #                      "Right-vessel_Volume_mm3",
+    #                      "5th-Ventricle_Volume_mm3")
+    # df.to_csv('../data/abide_clean.csv')
+    # check_site_correlation(df).to_csv("site_correlation_no_spurious.csv")
     df = csv_reader("../data/abide.csv")
-    # handle_spurious(df)
+    # # handle_spurious(df)
     get_correlation(df)
 
