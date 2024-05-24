@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 # Extraction of data as pandas dataframe
-data = pd.read_csv(r'../data/FS_features_ABIDE_males.csv', delimiter=';')
-data['SITE'] = data['FILE_ID'].str.split('_').str[0]
+data = pd.read_csv(r'../data/abide.csv', delimiter=';')
+data['SITE'] = data['FILE_ID'].str.rsplit('_', n = 1).str[0]
 
 age_by_site = {}
 for site, age_group in data.groupby('SITE')['AGE_AT_SCAN']:
@@ -27,9 +27,9 @@ bp = ax.boxplot([age_by_site[site] for site in sorted_sites],
 for patch in bp['boxes']:
     patch.set_facecolor(mcolors.to_rgba('royalblue', alpha=0.7))
 
-ax.set_xticklabels(sorted_sites, fontsize = 14)
-ax.set_xlabel('Site', fontsize = 20)
-ax.set_ylabel('Age [years]', fontsize = 20)
+ax.set_xticklabels(sorted_sites, fontsize = 14, rotation = 45)
+ax.set_xlabel('Site', fontsize = 24)
+ax.set_ylabel('Age [years]', fontsize = 24)
 ax.grid(False)
 
 ax_hist = ax.twiny() # for the histogram
@@ -43,4 +43,5 @@ ax_hist.set_ylabel('Age [years]')
 ax_hist.grid(False)
 
 plt.tight_layout()
+plt.savefig('histogram_age.png', transparent = True)
 plt.show()

@@ -190,6 +190,7 @@ def training(features, targets, model, epochs, **kwargs):
     axp.grid(False)
     return best_model, mae, r2, pad_control
 
+
 def mean_values_on_site(filename, targets, group, ex_cols, model, extremal = True):
         '''Given a neural network model and a dataset, this function calculates
         the estimators (pad, mae, r2) for each site of acquisition. The function always prints
@@ -276,9 +277,6 @@ def mean_values_on_site(filename, targets, group, ex_cols, model, extremal = Tru
             print(mean_r2)
 
         return appended_pad, mean_pad, mean_mae, mean_r2
-
-
-
 
 def neural_net_parsing():
     """
