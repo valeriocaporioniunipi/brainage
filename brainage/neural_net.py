@@ -13,8 +13,9 @@ from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from scikeras.wrappers import KerasRegressor
+import pandas as pd
 
-from utils import abs_path, get_data, group_selection, new_prediction
+from utils import abs_path, get_data, group_selection, new_prediction_step, new_prediction
 from utils import p_value_emp
 
 def create_nn(input_shape,
@@ -189,6 +190,94 @@ def training(features, targets, model, epochs, **kwargs):
     axp.grid(False)
     return best_model, mae, r2, pad_control
 
+
+def mean_values_on_site(filename, targets, group, ex_cols, model, extremal = True):
+        '''Given a neural network model and a dataset, this function calculates
+        the estimators (pad, mae, r2) for each site of acquisition. The function always prints
+        back some values. If extremal is True it prints the maximum and the minimum of the
+        mean of the estimators across all sites, if it is False prints the mean of the
+        estimators across all sites for each site. 
+        First return of the function is an array containing all the pad values across every site.
+        The other three return are dictionaries containing the meaned estimators as values and
+        the sites of acquisition as keys  
+        
+        :param filename: path to the CSV file containing the dataset 
+        :type filename: str
+        :param targets: name of the column holding target values
+        :type targets: str
+        :param group: name of the column indicating the group (experimental vs control)
+        :type group: str
+        :param ex_cols: number of columns excluded from dataset
+        :type ex_cols: int
+        :param model: neural network model
+        :type model: sequential
+        :param extremal: optional (default = True): printing modalities, False for detailed printings
+        :type extremal: Bool
+        :return: XXXXXXXX 
+        
+        '''
+        #Reading csv file given full path
+        df = pd.read_csv(filename, delimiter=';')
+
+        #Selecting only one group (experimental)
+        df = df[df[group] != -1]
+
+        #Taking only site information in a new column
+        df['SITE'] = df['FILE_ID'].str.split('_').str[0]
+        
+        #Vectors, dictionaries and figure initialization
+        pad_ads = np.array([])
+        appended_pad = np.array([])
+        mean_pad = {}
+        mean_mae = {}
+        mean_r2 = {}
+
+        _, ax = plt.subplots(figsize=(10, 8))
+
+        #Ranges for the plot:
+        target_range = [df[targets].values.min(), df[targets].values.max()]
+        #Plot the ideal line (y=x)
+        ax.plot(target_range, target_range, 'k--', lw=2)
+        #Setting plot configurations
+        ax.set_xlabel('Actual age [y]', fontsize = 20)
+        ax.set_ylabel('Predicted age [y]', fontsize = 20)
+        ax.set_title('Actual vs. predicted age - ASD', fontsize = 24)
+        colormap = cmaps.get_cmap('tab20')
+        colors = [colormap(i) for i,_ in enumerate(df['SITE'].values)]
+
+        #Starting cycle over each site
+        for i, (site, grouped_data) in enumerate(df.groupby('SITE'), 1):
+
+            #Features taken form ex_cols to end-1 in order to exlude new SITE column
+            features_exp = grouped_data.iloc[:, ex_cols:-1].values
+            #Target extraction:
+            targets_exp = grouped_data[targets].values
+            #extracting values for each group:
+            pad_ads, mae, r2 = new_prediction_step(features_exp, targets_exp, model, ax, color = colors[i])
+            #Storing values:
+            appended_pad = np.append(appended_pad, pad_ads)
+            mean_pad[site] = pad_ads.mean()
+            mean_mae[site] = mae.mean()
+            mean_r2[site] = r2.mean()
+                    
+        if extremal:
+            ausiliar_vector = [mean_pad, mean_mae, mean_r2]
+            string_vector = ["pad", "mae", "r2"]
+            #Here starts cycle for printing max and min values of estimators:
+            for i, mean_estimator in enumerate(ausiliar_vector):
+                abs_values = {key: abs(value) for key, value in mean_estimator.items()}
+                maximum = max(abs_values, key=abs_values.get)  
+                minimum = min(abs_values, key=abs_values.get)
+                print(f"highest absolute mean of {string_vector[i]} is in {maximum}: {abs_values[maximum]}")  
+                print(f"lowest absolute mean of {string_vector[i]} is in {minimum}: {abs_values[minimum]}") 
+        
+        else:
+            print(mean_pad)
+            print(mean_mae)
+            print(mean_r2)
+
+        return appended_pad, mean_pad, mean_mae, mean_r2
+
 def neural_net_parsing():
     """
     neural_net_parsing executes the parsing from terminal
@@ -259,7 +348,7 @@ def neural_net_parsing():
     parser.add_argument("--plot", action="store_true",
                          help="Show the plot of training history and actual vs predicted brain age")
     parser.add_argument("--group", default = 'DX_GROUP',
-                        help="Name of the column indicating the group (experimental vs control)")
+                        help="Name of the column indicating the group (experimental vs control) (default DX_Group)")
     parser.add_argument("--overs", action = 'store_true', default = False,
                         help="Oversampling, done in order to have"
                         "a flat distribution of targets (default = False).")
@@ -267,6 +356,8 @@ def neural_net_parsing():
                         help="Name of the column of sites, used for data harmonization")
     parser.add_argument("--grid", action = "store_true",
                         help="Grid search for hyperparameter optimization")
+    parser.add_argument("--extremal", type = bool, default = True,
+                        help = "Printing extremal estimators between sites of acquisition (default True)")
 
     args = parser.parse_args()
 
@@ -351,7 +442,7 @@ def neural_net_parsing():
                         epochs,
                         n_splits = args.folds,
                         plot_flag = args.plot)
-        pad_ads = new_prediction(features_exp, targets_exp, model)
+        pad_ads, mean_pad, _, _, = mean_values_on_site(args.filename, args.target, args.group, args.ex_cols, model, args.extremal)
         p_value_emp(pad_control, pad_ads)
         if args.plot:
             plt.show()

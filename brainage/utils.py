@@ -387,6 +387,42 @@ def group_selection(array, group, value):
     return selected
 
 
+def new_prediction_step(features, targets, model, ax, color = 'k'):
+    scaler = StandardScaler()
+    features = scaler.fit_transform(features)
+    y_pred = model.predict(features)
+    mae = mean_absolute_error(targets, y_pred)
+    r2 = r2_score(targets, y_pred)
+    print("Mean Absolute Error on exp:", mae)
+    print("R-squared on exp:", r2)
+
+    pad_new = y_pred.ravel()-targets
+    
+    ax.scatter(targets, y_pred, color = color, alpha =0.5,
+                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
+    return pad_new, mae, r2
+
+def new_prediction(features, targets, model):
+    _, axa = plt.subplots(figsize=(10, 8))
+
+    pad_new, mae, r2 = new_prediction_step(features, targets, model, axa)
+
+    target_range = [targets.min(), targets.max()]
+    # Plot the ideal line (y=x)
+    axa.plot(target_range, target_range, 'k--', lw=2)
+
+    # Set plot labels and title
+    axa.set_xlabel('Actual age [y]', fontsize = 20)
+    axa.set_ylabel('Predicted age [y]', fontsize = 20)
+    axa.set_title('Actual vs. predicted age - ASD', fontsize = 24)
+
+    # Add legend and grid to the plot
+    axa.legend(fontsize = 16)
+    axa.grid(False)
+    # plt.savefig('linear_reg_exp.png', transparent = True)
+    
+    return pad_new, mae, r2
+
 def csv_reader_parsing():
     """
     Command-line interface for reading and displaying CSV content,
@@ -432,13 +468,13 @@ if __name__ == "__main__":
     #csv_reader_parsing()
 
     # Uncomment for a rapid test
-<<<<<<< Updated upstream
+
     # df = csv_reader("../data/abide.csv")
     # check_site_correlation(df).to_excel("site_correlation.xlsx")
     # df = handle_spurious(df)
     # check_site_correlation(df).to_excel("site_correlation_no_spurious.xlsx")
-=======
+
     df = csv_reader("../data/abide.csv")
     # handle_spurious(df)
     get_correlation(df)
->>>>>>> Stashed changes
+
