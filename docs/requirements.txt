@@ -1,6 +1,6 @@
 furo==2021.11.16
 
-numpy
+numpy == 1.24.3
 matplotlib
 pandas
 tensorflow
