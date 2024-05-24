@@ -12,13 +12,13 @@ _, targets_os = get_data(r'../data/abide_globals.csv',
 plt.figure(figsize=(10, 6))
 
 plt.hist(targets, bins=30, color='blue',
-         alpha=0.5, edgecolor=None, label='Original targets')
+         alpha=0.5, edgecolor=None, label='Original')
 
 plt.hist(targets_os, bins=30, color='green',
-         alpha=0.5, edgecolor=None, label='Oversampled targets')
+         alpha=0.5, edgecolor=None, label='Oversampled')
 
-plt.title('Oversampling on ages', fontsize = 28)
-plt.xlabel('Age', fontsize = 24)
+plt.title('Age distribution before and after SmoteR', fontsize = 28)
+plt.xlabel('Age [y]', fontsize = 24)
 plt.ylabel('Occurrences', fontsize = 24)
 
 plt.legend(fontsize = 20)
