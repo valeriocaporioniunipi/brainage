@@ -23,7 +23,7 @@ def create_nn(input_shape,
                   hidden_nodes = 48,
                   optimizer = 'rmsprop',
                   dropout = 0.05,
-                  summary_flag = False):
+                  summary = False):
     """
     Create a neural network model using Keras API in order to solve a regression problem.
 
@@ -37,8 +37,8 @@ def create_nn(input_shape,
     :type optimizer: str
     :param dropout: Dropout rate of dropout layers
     :type dropout: float
-    :param summary_flag: Show the summary of the model
-    :type summary_flag: bool
+    :param summary: Show the summary of the model
+    :type summary: bool
     :return: Neural Network model
     :rtype: Sequential
     """
@@ -60,7 +60,7 @@ def create_nn(input_shape,
     model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mae'])
 
     # Printing summary, if specified
-    if summary_flag:
+    if summary:
         logger.info("Model successfully compiled, showing detailed summary ")
         model.summary()
     else:
@@ -383,7 +383,7 @@ def neural_net_parsing():
                                         hidden_nodes = args.hidden_nodes,
                                         dropout = args.dropout,
                                         optimizer = args.opt,
-                                        summary_flag = args.summary)
+                                        summary = args.summary)
             model, _, _, pad_control = training(features_control,
                         targets_control,
                         model,
@@ -435,7 +435,7 @@ def neural_net_parsing():
                                         grid_result.best_params_["model__optimizer"],
                                         dropout = 
                                         grid_result.best_params_['model__dropout'],
-                                        summary_flag = args.summary)
+                                        summary = args.summary)
             model, _, _, pad_control = training(features_control,
                         targets_control,
                         model,
