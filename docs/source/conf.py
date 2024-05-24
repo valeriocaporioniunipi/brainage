@@ -10,7 +10,7 @@ import pathlib
 import sys
 
 #Creating a path to code folder in order to update documentation
-code_path = pathlib.Path(__file__).resolve().parents[2] / 'code'
+code_path = pathlib.Path(__file__).resolve().parents[2] / 'brainage'
 sys.path.insert(0, code_path.as_posix())
 
 
