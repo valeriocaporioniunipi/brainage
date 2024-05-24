@@ -10,3 +10,4 @@ sphinx
 loguru
 smogn
 neuroHarmonize
+statsmodels
