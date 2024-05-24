@@ -181,7 +181,7 @@ def group_selection(array, group, value):
     selected = array[indices]
     return selected
 
-def new_prediction(features, targets, model):
+def new_prediction_step(features, targets, model, ax, color = 'k'):
     scaler = StandardScaler()
     features = scaler.fit_transform(features)
     y_pred = model.predict(features)
@@ -190,12 +190,20 @@ def new_prediction(features, targets, model):
     print("Mean Absolute Error on exp:", mae)
     print("R-squared on exp:", r2)
 
+    pad_new = y_pred.ravel()-targets
+    
+    ax.scatter(targets, y_pred, color = color, alpha =0.5,
+                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
+    return pad_new, mae, r2
+
+def new_prediction(features, targets, model):
     _, axa = plt.subplots(figsize=(10, 8))
+
+    pad_new, mae, r2 = new_prediction_step(features, targets, model, axa)
+
     target_range = [targets.min(), targets.max()]
     # Plot the ideal line (y=x)
     axa.plot(target_range, target_range, 'k--', lw=2)
-    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
-                label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
 
     # Set plot labels and title
     axa.set_xlabel('Actual age [y]', fontsize = 20)
@@ -206,8 +214,8 @@ def new_prediction(features, targets, model):
     axa.legend(fontsize = 16)
     axa.grid(False)
     # plt.savefig('linear_reg_exp.png', transparent = True)
-    pad_new = y_pred.ravel()-targets
-    return pad_new
+    
+    return pad_new, mae, r2
 
 def csv_reader_parsing():
     """
