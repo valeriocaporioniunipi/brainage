@@ -24,3 +24,9 @@ Here you can find the documentation of all the functions of the library
 
    <br><br>
 
+.. autofunction:: fileprova.maledettidocumentaristiegizi
+
+.. raw:: html
+
+   <br><br>
+
