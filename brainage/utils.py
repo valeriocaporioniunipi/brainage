@@ -353,9 +353,10 @@ def sites_barplot(numbers, sites):
     'Sites': sites
     })
     grouped_df = df.groupby('Sites')['Numbers'].mean().reset_index()
+    grouped_df = grouped_df.sort_values(by='Numbers', ascending=False)
 
     # Plot the DataFrame
-    ax = grouped_df.plot.barh(legend=False, color='RoyalBlue', width=0.7, figsize=(10, 6))
+    ax = grouped_df.plot.barh(x ='Sites', legend=False, color='RoyalBlue', width=0.7, figsize=(10, 6))
 
     # Set the labels and title
     ax.set_xlabel('MAE values')
