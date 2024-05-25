@@ -1,5 +1,6 @@
 import os
 import argparse
+
 from collections import defaultdict
 import numpy as np
 import pandas as pd
@@ -35,32 +36,6 @@ def abs_path(local_filename, data_folder):
     data_file_path = os.path.join(data_dir, local_filename)
 
     return data_file_path
-
-
-def csv_reader(filename, column_name=None, show_flag=False):
-    """
-    Reads data from a CSV file and converts it into a NumPy array.
-    Optionally displays the entire dataset or a single column.
-
-    :param filename: Path to the CSV file
-    :type filename: str
-    :param column_name: Name of the column to select (optional)
-    :type column_name: str, optional
-    :param show_flag: If True, displays the dataframe
-    :type show_flag: bool, optional
-    :return: A Pandas dataframe of the entire dataset or the specified column
-    :rtype: pandas.df
-    """
-    df = pd.read_csv(filename, delimiter=';')
-    if column_name is None:
-        if show_flag:
-            print(df)
-        return df
-    else:
-        if show_flag:
-            print(df[column_name])
-        return df[column_name]
-
 
 def mean_spurious(df):
     """
@@ -113,8 +88,7 @@ def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
 
 def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
     """
-    Handles spurious 0 and -9999 values in the DataFrame: whenever such a 
-    value is found, the row (patient) is excluded form the data.
+    Handles spurious 0 and -9999 values in the DataFrame by takeing the mean value of the column.
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
@@ -145,6 +119,10 @@ def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
 
     return df
 
+def group_selection(array, group, value):
+    indices = np.where(group == value)[0]
+    selected = array[indices]
+    return selected
 
 def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
     """
@@ -281,11 +259,21 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     # implicit else
     return features, targets
 
+def get_sites(filename, site_col, **kwargs):
+    group_col = kwargs.get('group_col', None)
+    group_value = kwargs.get('group_value', None)
+
+    data = pd.read_csv(filename, delimiter = ';')
+    data.loc[:, site_col] = data[site_col].str.rsplit('_', n=1).str[0]
+    if group_col and group_value:
+        data = data[data[group_col] == group_value]
+    sites = data[site_col].to_list()
+    return sites
 
 def p_value_emp(arr1, arr2, permutations=100000):
     """
     Calculate the empirical p-value for the difference in means
-    between two groups using permutation testing.
+    between two groups by performing permutation test.
 
     :param array-like arr1: Data for the first group.
     :param array-like arr2: Data for the second group.
@@ -294,16 +282,6 @@ def p_value_emp(arr1, arr2, permutations=100000):
 
     :return: Empirically calculated p-value for the observed difference in means.
     :rtype: float
-
-    This function performs a permutation test to
-    estimate the empirical p-value for the difference in means between two groups.
-    The observed test statistic is the difference in means between arr2 and arr1.
-
-    The function generates permuted test statistics by randomly permuting
-    the data between the two groups and calculates the difference in means for each permutation.
-    The empirical p-value is then calculated as the proportion
-    of permuted differences in means that are greater than
-    or equal to the observed difference in means.
     """
 
     # Observed test statistic (difference in means)
@@ -336,60 +314,9 @@ def p_value_emp(arr1, arr2, permutations=100000):
     return p_value
 
 
-def oversampling(features, targets, **kwargs):
-    """
-    Oversampled minority classes in the dataset to balance class distribution.
+def new_prediction(features, targets, model):
+    _, axa = plt.subplots(figsize=(10, 8))
 
-    :param features: Feature array
-    :type features: numpy.ndarray
-    :param targets: Target array
-    :type targets: numpy.ndarray
-    :return: Oversampled features and targets arrays
-    :rtype: tuple(numpy.ndarray, numpy.ndarray)
-    """
-    bins = kwargs.get('bins', 10)
-    group = kwargs.get('group', None)
-
-    hist, edges = np.histogram(targets, bins=bins)
-
-    max_bin_index = np.argmax(hist)
-    max_count = hist[max_bin_index]
-
-    if max_count == 0:
-        raise ValueError("No samples available in the bin with the maximum count for oversampling. "
-                         "Adjust bin size or provide more data.")
-
-    oversampled_features = []
-    oversampled_targets = []
-    oversampled_group = [] if group is not None else None
-
-    for i in range(bins - 1):
-        bin_indices = np.where((targets >= edges[i]) & (targets < edges[i + 1]))[0]
-        size = max_count
-        sampled_indices = np.random.choice(bin_indices, size=size, replace=True)
-
-        oversampled_features.append(features[sampled_indices])
-        oversampled_targets.append(targets[sampled_indices])
-        if group is not None:
-            oversampled_group.append(group[sampled_indices])
-
-    new_features = np.concatenate(oversampled_features)
-    new_targets = np.concatenate(oversampled_targets)
-    new_group = np.concatenate(oversampled_group) if group is not None else None
-
-    if group is not None:
-        return new_features, new_targets, new_group
-    else:
-        return new_features, new_targets, None
-
-
-def group_selection(array, group, value):
-    indices = np.where(group == value)[0]
-    selected = array[indices]
-    return selected
-
-
-def new_prediction_step(features, targets, model, ax, color = 'k'):
     scaler = StandardScaler()
     features = scaler.fit_transform(features)
     y_pred = model.predict(features)
@@ -400,14 +327,8 @@ def new_prediction_step(features, targets, model, ax, color = 'k'):
 
     pad_new = y_pred.ravel()-targets
     
-    ax.scatter(targets, y_pred, color = color, alpha =0.5,
+    axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
                 label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
-    return pad_new, mae, r2
-
-def new_prediction(features, targets, model):
-    _, axa = plt.subplots(figsize=(10, 8))
-
-    pad_new, mae, r2 = new_prediction_step(features, targets, model, axa)
 
     target_range = [targets.min(), targets.max()]
     # Plot the ideal line (y=x)
@@ -425,45 +346,28 @@ def new_prediction(features, targets, model):
     
     return pad_new, mae, r2
 
-def csv_reader_parsing():
-    """
-    Command-line interface for reading and displaying CSV content,
-    or stripping everything after '_' in a specified column, and converting to canonical base.
-    Example usage:
-        python script.py show path/to/file.csv
-        python script.py show_column path/to/file.csv --column column_name
-    """
-    parser = argparse.ArgumentParser(description="CSV Reader "
-                                                 "A tool to read CSV files with Pandas."
-                                     )
-    parser.add_argument("command",
-                        choices=["show", "show_column"],
-                        help="Choose the command to execute"
-                        )
-    parser.add_argument("filename",
-                        help="Name of the CSV file"
-                        )
-    parser.add_argument("--column",
-                        help="Name of the column to display or process"
-                             " (req. for 'show_column' commands)"
-                        )
+def sites_barplot(numbers, sites):
+    numbers = np.abs(numbers)
+    df = pd.DataFrame({
+    'Numbers': numbers,
+    'Sites': sites
+    })
+    grouped_df = df.groupby('Sites')['Numbers'].mean().reset_index()
 
-    args = parser.parse_args()
+    # Plot the DataFrame
+    ax = grouped_df.plot.barh(legend=False, color='RoyalBlue', width=0.7, figsize=(10, 6))
 
-    try:
-        if args.command == "show":
-            csv_reader(args.filename, show_flag=True)
-        elif args.command == "show_column":
-            if not args.column:
-                parser.error("The '--column' argument is required for 'show_column' command.")
-            else:
-                csv_reader(args.filename, args.column, show_flag=True)
-        else:
-            logger.error("No command was given ")
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
-    except KeyError as e:
-        logger.error(f"Column '{args.column}' not found in the CSV file: {e}")
+    # Set the labels and title
+    ax.set_xlabel('MAE values')
+    ax.set_title('Bar plot of MAE across sites')
+    plt.xticks(rotation=0)
+
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    #plt.tick_params(top = "off", right = "off")
+
+    plt.tight_layout()
+    plt.savefig("../plots/bar_plot.png", transparent = True)
 
 def mean_values_on_site(filename, targets, group, ex_cols, model):
         '''Given a neural network model and a dataset, this function calculates
@@ -542,11 +446,9 @@ def mean_values_on_site(filename, targets, group, ex_cols, model):
         return appended_pad, mean_pad, mean_mae, mean_r2
 
 if __name__ == "__main__":
-    csv_reader_parsing()
 
     # Uncomment for a rapid test
     
-    # df = csv_reader("../data/abide.csv")
     # check_for_spurious(df, show = True)
     # check_site_correlation(df).to_csv("../data/site_correlation.csv")
     # df = handle_spurious(df, "FIQ",
@@ -555,7 +457,7 @@ if __name__ == "__main__":
     #                      "5th-Ventricle_Volume_mm3")
     # df.to_csv('../data/abide_clean.csv')
     # check_site_correlation(df).to_csv("site_correlation_no_spurious.csv")
-    df = csv_reader("../data/abide.csv")
+    df = pd.read_csv("../data/abide.csv", delimiter = ';')
     # # handle_spurious(df)
     get_correlation(df)
 

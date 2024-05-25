@@ -14,7 +14,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from scikeras.wrappers import KerasRegressor
 
-from utils import abs_path, get_data, group_selection, p_value_emp, mean_values_on_site
+from utils import abs_path, get_data, group_selection, get_sites, sites_barplot, new_prediction
+from utils import p_value_emp
 
 def create_nn(input_shape,
                   hidden_layers = 1,
@@ -266,6 +267,8 @@ def neural_net_parsing():
                         help="Name of the column of sites, used for data harmonization")
     parser.add_argument("--grid", action = "store_true",
                         help="Grid search for hyperparameter optimization")
+    parser.add_argument("--site_col", default = 'FILE_ID',
+                        help = "Column with information about acquisition site")
 
     args = parser.parse_args()
 
@@ -350,8 +353,11 @@ def neural_net_parsing():
                         epochs,
                         n_splits = args.folds,
                         plot_flag = args.plot)
-        pad_ads, _, _, _, = mean_values_on_site(args.filename, args.target, args.group, args.ex_cols, model)
-        p_value_emp(pad_control, pad_ads)
+        pad_asd, _, _ = new_prediction(features_exp, targets_exp, model)
+        p_value_emp(pad_control, pad_asd)
+        sites_asd = get_sites(args.filename, site_col = args.site_col, group_col = args.group,
+                          group_value = 1) # 1 is for ASD group
+        sites_barplot(pad_asd, sites_asd)
         if args.plot:
             plt.show()
         else:
