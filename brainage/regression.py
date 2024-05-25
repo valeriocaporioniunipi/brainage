@@ -194,7 +194,7 @@ def reg_parsing():
                 targets_experimental = group_selection(targets, group, 1)
                 model, _, _, pad_control = regression(args.type, features_control,
                                                     targets_control, args.folds)
-                pad_asd, _, _, _ = new_prediction(features_experimental, targets_experimental, model)
+                pad_asd, _, _ = new_prediction(features_experimental, targets_experimental, model)
                 print(np.mean(pad_control), np.mean(pad_asd))
                 p_value_emp(pad_control, pad_asd)
                 if args.plot:
