@@ -56,74 +56,7 @@ and a code folder.</p>
 </dl>
 </dd></dl>
 
-<br><br><dl class="function">
-<dt id="regression.regression">
-<code class="sig-prename descclassname">regression.</code><code class="sig-name descname">regression</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">features</em>, <em class="sig-param">targets</em>, <em class="sig-param">n_splits</em><span class="sig-paren">)</span><a class="headerlink" href="#regression.regression" title="Permalink to this definition">¶</a></dt>
-<dd><p>linear_reg performs linear regression with k-fold cross-validation on the
-given dataset and prints evaluation metrics of the linear regression model
-such as MAE (mean absolute error), MSE (mean squared error) and R-squared.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing the dataset</p></li>
-<li><p><strong>n_splits</strong> (<em>int</em>) – number of folds for cross-validation</p></li>
-<li><p><strong>plot_flag</strong> (<em>bool</em>) – optional (default = False): Whether to plot the actual vs. predicted values</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<br><br><dl class="function">
-<dt id="regression.reg_parsing">
-<code class="sig-prename descclassname">regression.</code><code class="sig-name descname">reg_parsing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#regression.reg_parsing" title="Permalink to this definition">¶</a></dt>
-<dd><p>linear_reg function parsed that runs when the .py file is called.
-It performs a  linear regression with k-fold cross-validation
-predicting the age of patients from magnetic resonance imaging and
-prints evaluation metrics of the linear regression model 
-such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
-There are two ways to pass the csv file to this function. It’s possible to
-pass the absolutepath of the dataset or you can store the dataset in a brother folder
-of the one containing code, and pass to the parsing
-function the filename and his container-folder.
-The parameters listed below are not parameters of the functions but
-are parsing arguments that have 
-to be passed to command line when executing the program as follow:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python linear_reg.py file.csv --target --location --folds --ex_cols --plot 
-</pre></div>
-</div>
-<p>where file.csv is the only mandatory argument,
-while others are optional and takes some default values,
-that if they have to be modified you can write for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python linear_reg.py file.csv --folds 10  
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – path to the CSV file containing 
-the dataset or the name of the file if –location argument is passed</p></li>
-<li><p><strong>target</strong> (<em>str</em>) – optional (default = AGE_AT_SCAN): Name of the column holding target values</p></li>
-<li><p><strong>location</strong> (<em>str</em>) – optional: Location of the file, i.e. folder containing it</p></li>
-<li><p><strong>folds</strong> (<em>int</em>) – optional (&gt;4, default 5):number of folds for cross-validation</p></li>
-<li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 3): columns excluded when importing file</p></li>
-<li><p><strong>plot</strong> (<em>bool</em>) – optional (default = False): Show the plot of actual vs predicted brain age</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<br><br><dl class="function">
-<dt id="fileprova.maledetti_documentaristiegizi">
-<code class="sig-prename descclassname">fileprova.</code><code class="sig-name descname">maledetti_documentaristiegizi</code><span class="sig-paren">(</span><em class="sig-param">seiundocumentarista</em><span class="sig-paren">)</span><a class="headerlink" href="#fileprova.maledetti_documentaristiegizi" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<br><br></div>
+<br><br><br><br><br><br><br><br></div>
 
 
           </div>
