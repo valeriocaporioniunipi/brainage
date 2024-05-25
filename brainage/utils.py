@@ -1,5 +1,4 @@
 import os
-import argparse
 
 from collections import defaultdict
 import numpy as np
