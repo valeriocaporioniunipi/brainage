@@ -255,11 +255,6 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     if overs:
         data = smoter(data, target_col)
         logger.info('Oversampling performed with SmoteR')
-    #data = mean_spurious(data)
-
-    # if group_col is not None:
-    #    data = data[data[group_col] == -1]
-
     # Excluding the first ex_cols columns
     features_df = data.iloc[:, ex_cols:]
     # Convert in to numpy matrix
