@@ -195,7 +195,7 @@ def reg_parsing():
                 model, _, _, pad_control = regression(args.type, features_control,
                                                     targets_control, args.folds)
                 pad_ads, _, _ = new_prediction(features_experimental, targets_experimental, model)
-                print(np.mean(pad_control), np.mean(pad_ads))
+                print('mean PAD for control : ',np.mean(pad_control),'mean PAD for exp. : ', np.mean(pad_ads))
                 p_value_emp(pad_control, pad_ads)
                 if args.plot:
                     plt.show()
