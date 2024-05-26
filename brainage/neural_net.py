@@ -357,6 +357,7 @@ def neural_net_parsing():
         p_value_emp(pad_control, pad_asd)
         sites_asd = get_sites(args.filename, site_col = args.site_col, group_col = args.group,
                           group_value = 1) # 1 is for ASD group
+        print(np.mean(pad_control), np.mean(pad_asd))
         sites_barplot(pad_asd, sites_asd)
         if args.plot:
             plt.show()

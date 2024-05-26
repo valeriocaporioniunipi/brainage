@@ -102,7 +102,7 @@ def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
         if isinstance(arg, str):
             df.drop(arg, axis="columns", inplace=True)
         else:
-            print("Invalid argument!")
+            logger.error('Invalid argument')
 
     # Replace -9999 with NaN
     df.replace(-9999, np.nan, inplace=True)
@@ -370,19 +370,15 @@ def sites_barplot(numbers, sites):
     plt.savefig("../plots/bar_plot.png", transparent = True)
 
 if __name__ == "__main__":
-
-    # Uncomment for a rapid test
-    
+    df = pd.read_csv('../data/abide.csv', delimiter = ';')
+    ## First step
     # check_for_spurious(df, show = True)
-    # check_site_correlation(df).to_csv("../data/site_correlation.csv")
+    ## Second step
     # df = handle_spurious(df, "FIQ",
     #                      "Left-vessel_Volume_mm3",
     #                      "Right-vessel_Volume_mm3",
     #                      "5th-Ventricle_Volume_mm3")
-    # df.to_csv('../data/abide_clean.csv')
-    # check_site_correlation(df).to_csv("site_correlation_no_spurious.csv")
-    df = pd.read_csv("../data/abide.csv", delimiter = ';')
-    # # handle_spurious(df)
-    get_correlation(df)
+    # df.to_csv('../data/abide_clean.csv', sep=';')
+    # logger.info('Done')
 
     
