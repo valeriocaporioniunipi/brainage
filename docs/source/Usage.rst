@@ -12,19 +12,19 @@ Dependencies
 Brainage's programs import other libraries that are needed to guarantee the correct functioning
 of the library. Such dependencies are listed here:
 
-*numpy
-*matplotlib
-*pandas
-*tensorflow
-*scikit-learn
-*scikeras
-*sphinx
-*loguru
-*smogn
-*neuroHarmonize
-*statsmodels
-*neuroCombat
-*nibabel
+* numpy
+* matplotlib
+* pandas
+* tensorflow
+* scikit-learn
+* scikeras
+* sphinx
+* loguru
+* smogn
+* neuroHarmonize
+* statsmodels
+* neuroCombat
+* nibabel
 
 
 Installation
