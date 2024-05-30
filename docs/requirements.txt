@@ -10,3 +10,6 @@ sphinx
 loguru
 smogn
 neuroHarmonize
+statsmodels
+neuroCombat
+nibabel
