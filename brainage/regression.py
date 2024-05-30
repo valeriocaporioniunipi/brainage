@@ -172,7 +172,7 @@ def reg_parsing():
     """
 
     parser = argparse.ArgumentParser(description=
-        'Linear regression predicting the age of patients from magnetic resonance imaging')
+                                     'Linear regression predicting the age of patients from magnetic resonance imaging')
 
     parser.add_argument("filename",
                          help="Name of the file that has to be analized if --location argument is"
