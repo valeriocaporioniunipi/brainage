@@ -37,7 +37,7 @@ def abs_path(local_filename, data_folder):
     return data_file_path
 
 def mean_spurious(df):
-   """
+    """
     Handles spurious 0 and -9999 values in the data, if the dataset is not properly cleaned before.
     This function will replace 0 and -9999 values with the mean of respective columns
     

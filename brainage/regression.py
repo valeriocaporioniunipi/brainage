@@ -121,7 +121,7 @@ def regression(type, features, targets, n_splits):
 
 
 def reg_parsing():
-     """
+    """
     regression function parsed that runs when the .py file is called.
     It performs regression (linear or gaussian) with k-fold cross-validation 
     predicting the age of patients from magnetic resonance imaging and

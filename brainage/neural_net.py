@@ -23,7 +23,7 @@ def create_nn(input_shape,
                   optimizer = 'rmsprop',
                   dropout = 0.05,
                   summary = False):
-   """
+    """
     Create a neural network model using Keras API in order to solve a regression problem.
 
     :param input_shape: shape of the data given to the input layer of the NN
@@ -67,7 +67,7 @@ def create_nn(input_shape,
     return model
 
 def training(features, targets, model, epochs, **kwargs):
-   """
+    """
     Train a neural network using k-fold cross-validation. 
     The function can show actual vs predicted brain age scatter plot and training history plot.
 
