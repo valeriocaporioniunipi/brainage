@@ -37,8 +37,9 @@ def abs_path(local_filename, data_folder):
     return data_file_path
 
 def mean_spurious(df):
-    """
+   """
     Handles spurious 0 and -9999 values in the data, if the dataset is not properly cleaned before.
+    This function will replace 0 and -9999 values with the mean of respective columns
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
@@ -62,9 +63,8 @@ def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
     :type df: pd.DataFrame
     :param show: Whether to show the dataset, default = False
     :type show: Bool
-
-    Returns: Dataframe containing the names of columns with the most dirty data
-    and counter of dirty data.
+    :return: Dataframe containing the names of columns with the most dirty data
+        and counter of dirty data.
 
     """
     # Store a counter of instances of missing data for each feature
@@ -91,11 +91,13 @@ def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
     
     :param df: Input DataFrame
     :type df: pd.DataFrame
+    :param args: arguments:
+
+                   - ***args** (*str*): Names of columns to remove .
+
     :return: Cleaned DataFrame with spurious values handled
     :rtype: pd.DataFrame
 
-    Args:
-        *args (str): Names of columns to remove
     """
 
     for arg in args:
@@ -119,6 +121,18 @@ def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
     return df
 
 def group_selection(array, group, value):
+    """Returns the rows of a matrix that contain value in group element
+
+    :param array: Data that have to be splitted
+    :type array": ndarray
+    :param group: Name of the column used as reference
+    :type group: str
+    :param value: value that has to be present in group column in order to be selected
+
+    :return: The matrix with the selected rows
+    :rtype: ndarray
+
+    """
     indices = np.where(group == value)[0]
     selected = array[indices]
     return selected
@@ -216,11 +230,12 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     :param target_col: Name of the target column.
     :type target_col: str
     :param ex_cols: Number of initial columns to exclude from the features (default is 0).
-    :type ex_cols: int, optional
+    :type ex_cols: (optional): int
     :param kwargs: Additional keyword arguments:
-                   - group_col: Name of the group column (optional).
-                   - site_col: Name of the site column for harmonization (optional).
-                   -overs: Boolean flag in order to perform SmoteR oversampling (optional).
+
+                   - **group_col** (*str*): (optional): Name of the group column .
+                   - **site_col** (*str*): (optional): Name of the site column for harmonization.
+                   - **overs** (*bool*): (optional): Boolean flag in order to perform SmoteR oversampling.
     :return: NumPy arrays of features, targets, and optionally the group.
     :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
@@ -259,6 +274,21 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
     return features, targets
 
 def get_sites(filename, site_col, **kwargs):
+    """
+    Gives a list of sites of acquisition cutting names of sites in corrispondence of underscores
+
+    :param filename: full path to the ndarray
+    :type filename: str
+    :param site_col: name of site column
+    :type site_col: str
+    :param kwargs: Additional keyword arguments:
+
+                   - **group_col** (*str*): (optional): Name of the group column.
+                   - **group_value** (*str*): (optional): Value used to select.
+
+    :return: list of sites
+    :rtype: list
+    """
     group_col = kwargs.get('group_col', None)
     group_value = kwargs.get('group_value', None)
 
@@ -314,6 +344,28 @@ def p_value_emp(arr1, arr2, permutations=100000):
 
 
 def new_prediction(features, targets, model):
+    """ 
+    given features and a model it calculates a new prediction for the targets and returns
+        estimators of such new prediction
+    
+    :param features: features
+    :type features: numpy.ndarray
+    :param targets: array containing target feature
+    :type targets: numpy.array 
+    :param model: The model to use for making predictions. This can be an instance of:
+
+              - keras.models.Sequential
+              - sklearn.linear_model.LinearRegression
+              - sklearn.linear_model.GaussianProcessRegression
+
+    :return: A tuple containing:
+    
+        - **pad** (*list*): the predicted actual difference.
+        - **mae** (*float*): the mean absolute error mean across folds.
+        - **r2** (*float*): the coefficient of determination mean across folds.
+
+    :rtype: tuple(list, float, float)
+    """
     _, axa = plt.subplots(figsize=(10, 8))
 
     scaler = StandardScaler()
@@ -346,6 +398,15 @@ def new_prediction(features, targets, model):
     return pad_new, mae, r2
 
 def sites_barplot(numbers, sites):
+    """
+    Plots the barplot of the absolute values of a list of parameters from various sites.
+    
+    :param array-like numbers: parameters graphed
+    :param array-like sites: sites 
+
+    :return: None 
+    
+    """
     numbers = np.abs(numbers)
     df = pd.DataFrame({
     'Numbers': numbers,
