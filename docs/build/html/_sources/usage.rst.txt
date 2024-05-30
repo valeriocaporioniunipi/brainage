@@ -1,7 +1,7 @@
 Usage
 ============
 
-Installation
+Source
 ------------
 
 You can download everything (code, documentation, dataset) from the
@@ -9,21 +9,31 @@ You can download everything (code, documentation, dataset) from the
 
 Dependencies
 ------------
-Test se cambia
 Brainage's programs import other libraries that are needed to guarantee the correct functioning
 of the library. Such dependencies are listed here:
 
-* argparse
 * numpy
-* loguru.logger
-* matplotlib.pyplot
-* keras.Sequential
-* keras.layers
-* sklearn.model_selection.train_test_split
-* sklearn.model_selection.KFold
-* sklearn.metrics.mean_absolute_error
-* sklearn.mean_squared_error,
-* sklearn.r2_score
-* sklearn.preprocessing.StandardScaler
+* matplotlib
+* pandas
+* tensorflow
+* scikit-learn
+* scikeras
+* sphinx
+* loguru
+* smogn
+* neuroHarmonize
+* statsmodels
+* neuroCombat
+* nibabel
 
+
+Installation
+------------
+
+In order to install dependencies run in the directory containing
+the <p><em>requirements.txt</em></p> this line:
+
+.. code::
+
+        $Your_PC>pip install -r requirements.txt
 
