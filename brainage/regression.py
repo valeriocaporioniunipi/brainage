@@ -19,18 +19,32 @@ from utils import abs_path, get_data, p_value_emp, group_selection, new_predicti
 def regression(type, features, targets, n_splits):
 
     """
-    linear_reg performs linear regression with k-fold cross-validation on the
+    performs regression (using sklearn) with k-fold cross-validation with a specified number of splits on the
     given dataset and prints evaluation metrics of the linear regression model
-    such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
+    such as MAE (mean absolute error) and R-squared. Regressions models implemented are linear and
+    gaussian. The function inizialize a plot that shows actual vs. predicted age for a control
+    group of patients. 
 
-    :param filename: path to the CSV file containing the dataset 
-    :type filename: str
+    :param type: type of regression performed, only two arguments are possible
+        'linear' or 'gaussian'  
+    :type type: str
+    :param features: features
+    :type features: numpy.ndarray
+    :param targets: array containing target feature
+    :type targets: numpy.array 
     :param n_splits: number of folds for cross-validation
     :type n_splits: int
-    :param plot_flag: optional (default = False): Whether to plot the actual vs. predicted values
-    :type plot_flag: bool
-    :return: None
+
+    :returns: A tuple containing:
+    
+        - **best_model** (*sequential*): the best model selected across k-folding.
+        - **mae** (*float*): the mean absolute error mean across folds.
+        - **r2** (*float*): the coefficient of determination mean across folds.
+        - **pad_control** (*list*): the predicted actual difference.
+    :rtype: tuple(sequential, float, float, list)
+
     """
+
 
     # Initialize data standardization (done after the k-folding split to avoid leakage)
     scaler = StandardScaler()
@@ -107,12 +121,12 @@ def regression(type, features, targets, n_splits):
 
 
 def reg_parsing():
-    """
-    linear_reg function parsed that runs when the .py file is called.
-    It performs a  linear regression with k-fold cross-validation
+     """
+    regression function parsed that runs when the .py file is called.
+    It performs regression (linear or gaussian) with k-fold cross-validation 
     predicting the age of patients from magnetic resonance imaging and
     prints evaluation metrics of the linear regression model 
-    such as MAE (mean absolute error), MSE (mean squared error) and R-squared.
+    such as MAE (mean absolute error) and R-squared.
     There are two ways to pass the csv file to this function. It's possible to
     pass the absolutepath of the dataset or you can store the dataset in a brother folder
     of the one containing code, and pass to the parsing
@@ -123,9 +137,9 @@ def reg_parsing():
 
     .. code::
 
-        $Your_PC>python linear_reg.py file.csv --target --location --folds --ex_cols --plot 
+        $Your_PC>python regression.py file.csv type --target --location --folds --ex_cols --plot 
 
-    where file.csv is the only mandatory argument,
+    where file.csv and type are the only mandatory argument,
     while others are optional and takes some default values,
     that if they have to be modified you can write for example:
 
@@ -136,16 +150,23 @@ def reg_parsing():
     :param filename: path to the CSV file containing 
         the dataset or the name of the file if --location argument is passed 
     :type filename: str
-    :param target: optional (default = AGE_AT_SCAN): Name of the column holding target values
+    :param type: type of regression performed, only two arguments are possible
+        'linear' or 'gaussian'  
+    :type type: str
+    :param target: optional (default = AGE_AT_SCAN): name of the column holding target values
     :type target: str
-    :param location: optional: Location of the file, i.e. folder containing it 
+    :param location: optional: location of the file, i.e. folder containing it 
     :type location: str
     :param folds: optional (>4, default 5):number of folds for cross-validation
     :type folds: int
-    :param ex_cols: optional (default = 3): columns excluded when importing file
+    :param ex_cols: optional (default = 5): columns excluded when importing file
     :type ex_cols: int
-    :param plot: optional (default = False): Show the plot of actual vs predicted brain age
+    :param overs: optional (default = False): if True oversampling on dataset is performed
+    :type overs: bool
+    :param plot: optional (default = False): show the plot of actual vs predicted brain age
     :type plot: bool
+    :param group: optional (default = 'DX_GROUP'): name of the column indicating the group
+        ('control' vs 'experimental')
     :return: None
 
     """
