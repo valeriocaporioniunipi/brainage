@@ -23,22 +23,22 @@ def create_nn(input_shape,
                   optimizer = 'rmsprop',
                   dropout = 0.05,
                   summary = False):
-    """
+   """
     Create a neural network model using Keras API in order to solve a regression problem.
 
-    :param input_shape: Shape of the data given to the input layer of the NN
+    :param input_shape: shape of the data given to the input layer of the NN
     :type input_shape: tuple
-    :param hidden_layers: Number of hidden layers in the network
+    :param hidden_layers: optional(default = 1): number of hidden layers in the network
     :type hidden_layers: int
-    :param hidden_nodes: Number of nodes in each hidden layer
+    :param hidden_nodes: optional(default = 48) number of nodes in each hidden layer
     :type hidden_nodes: int
-    :param optimizer: Optimizer to use
+    :param optimizer: optional(default = 'rmsprop') optimizer to use
     :type optimizer: str
-    :param dropout: Dropout rate of dropout layers
+    :param dropout: optional (default = 0.05): dropout rate of dropout layers
     :type dropout: float
-    :param summary: Show the summary of the model
+    :param summary: optional (default = False): show the summary of the model
     :type summary: bool
-    :return: Neural Network model
+    :return: neural network model
     :rtype: Sequential
     """
 
@@ -67,24 +67,24 @@ def create_nn(input_shape,
     return model
 
 def training(features, targets, model, epochs, **kwargs):
-    """"
-    Train a neural network using k-fold cross-validation.
+   """
+    Train a neural network using k-fold cross-validation. 
     The function can show actual vs predicted brain age scatter plot and training history plot.
 
-    :param features: Matrix of features
+    :param features: matrix of features
     :type features: ndarray
-    :param targets: Array of target values
+    :param targets: array of target values
     :type targets: array
-    :param model: Neural network model
-    :type model: Sequential
-    :param epochs: Number of epochs for training
+    :param model: neural network model
+    :type model: sequential
+    :param epochs: number of epochs for training
     :type epochs: int
-    :param kwargs: Additional keyword arguments
-        - n_splits (int, optional): Number of folds for cross-validation. Defaults to 5.
+    :param kwargs: additional keyword arguments
+        - n_splits (int, optional, default to 5): number of folds for cross-validation
 
-    :return: Array holding mean absolute error, mean squared error, and R-squared scores
+    :return: array holding mean absolute error, mean squared error, and R-squared scores
     :rtype: ndarray
-    :return: List holding the n-splits models obtained after training
+    :return: list holding the n-splits models obtained after training
     :rtype: list
     """
 
@@ -190,8 +190,12 @@ def training(features, targets, model, epochs, **kwargs):
     return best_model, mae, r2, pad_control
 
 def neural_net_parsing():
-    """
-    neural_net_parsing executes the parsing from terminal
+    """  
+    The neural_net_parsing function is designed to parse command-line arguments and execute a neural
+    network training process based on the provided parameters. It reads a dataset from a file,
+    preprocesses the data, creates and trains a neural network model using k-fold cross-validation,
+    and optionally performs a grid search for hyperparameter optimization. As output the function prints
+    the model structure   
 
     The parameters listed below are not parameters of the functions, but are parsing arguments
     to be used in terminal, when executing the program as follows:
@@ -207,27 +211,40 @@ def neural_net_parsing():
         $Your_PC>python neural_net.py --help
 
 
-    :param filename: Name of the file that has to be analized
+    :param filename: name of the file that has to be analized
     :type filename: str
-    :param target: optional (default = AGE_AT_SCAN): Name of the colums holding target values
+    :param target: optional (default = AGE_AT_SCAN): name of the colums holding target values
     :type target: str
-    :param location: optional: Location of the file, i.e. folder containing it
+    :param location: optional: location of the file, i.e. folder containing it
     :type location: str
-    :param hidden_layers: optional (default = 1): Number of hidden layers in the neural network
+    :param hidden_layers: optional (default = 1): number of hidden layers in the neural network
     :type hidden_layers: int
-    :param hidden_nodes: optional (default = 32): Number of hidden layer nodes in the neural network
+    :param hidden_nodes: optional (default = 32): number of hidden layer nodes in the neural network
     :type hidden_nodes: int
-    :param epochs: optional (default = 300): Number of epochs of training
+    :param epochs: optional (default = 300): number of epochs of training
     :type epochs: int
-    :param folds: optional (>4, default = 5): Number of folds in the k-folding
+    :param opt: optional(default = "rmsprop"): optimizer 
+    :type opt: str
+    :param folds: optional (>4, default = 5): number of folds in the k-folding
     :type folds: int
-    :param ex_cols: optional (default = 3): Number of columns excluded when importing
+    :param dropout: optional (default = 0.05): dropout rate in neural network
+    :type dropout: int
+    :param ex_cols: optional (default = 5): number of columns excluded when importing
     :type ex_cols: int
-    :param summary: optional: Show the summary of the neural network
+    :param summary: optional(default = False): show the summary of the neural network
     :type summary: bool
-    :param plot: optional: Show the plot of training history and actual vs predicted brain age
+    :param plot: optional(default = False): show the plot of training history, actual vs 
+        predicted brain (TD and ASD)
     :type plot: bool
-    :param grid: optional: Grid search for hyperparameter optimization
+    :param group: optional(default = 'DX_GROUP'): name of the column indicating the 
+        group (experimental vs control)")
+    :type group: str    
+    :param overs: optional(default = False): oversampling, done in order to have
+        a flat distribution of targets")
+    :type overs: bool
+    :param harm: optional: name of the column of sites, used for data harmonization
+    :type harm: str             
+    :param grid: optional(default = False): grid search for hyperparameter optimization
     :type grid: bool
 
     """
