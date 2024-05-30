@@ -31,9 +31,9 @@ Installation
 ------------
 
 In order to install dependencies run in the directory containing
-the <p><em>requirements.txt</em></p> this line:
+the *requirements.txt* this line:
 
 .. code::
 
-        $Your_PC>pip install -r requirements.txt
+    $Your_PC\...\requirements_folder>pip install -r requirements.txt
 
