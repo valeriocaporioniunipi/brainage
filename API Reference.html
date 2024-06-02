@@ -330,8 +330,8 @@ The function can show actual vs predicted brain age scatter plot and training hi
 <dd><p>The neural_net_parsing function is designed to parse command-line arguments and execute a neural
 network training process based on the provided parameters. It reads a dataset from a file,
 preprocesses the data, creates and trains a neural network model using k-fold cross-validation,
-and optionally performs a grid search for hyperparameter optimization. As output the function prints
-the model structure</p>
+and optionally performs a grid search for hyperparameter optimization.
+As output the function prints the model structure</p>
 <p>The parameters listed below are not parameters of the functions, but are parsing arguments
 to be used in terminal, when executing the program as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$Your_PC&gt;python neural_net.py file.csv --folds 7 --ex_cols 4 --plot 
@@ -347,12 +347,12 @@ to be used in terminal, when executing the program as follows:</p>
 <li><p><strong>filename</strong> (<em>str</em>) – name of the file that has to be analized</p></li>
 <li><p><strong>target</strong> (<em>str</em>) – optional (default = AGE_AT_SCAN): name of the colums holding target values</p></li>
 <li><p><strong>location</strong> (<em>str</em>) – optional: location of the file, i.e. folder containing it</p></li>
-<li><p><strong>hidden_layers</strong> (<em>int</em>) – optional (default = 1): number of hidden layers in the neural network</p></li>
-<li><p><strong>hidden_nodes</strong> (<em>int</em>) – optional (default = 32): number of hidden layer nodes in the neural network</p></li>
+<li><p><strong>hidden_layers</strong> (<em>int</em>) – optional (default = 2): number of hidden layers in the neural network</p></li>
+<li><p><strong>hidden_nodes</strong> (<em>int</em>) – optional (default = 48): number of hidden layer nodes in the neural network</p></li>
 <li><p><strong>epochs</strong> (<em>int</em>) – optional (default = 300): number of epochs of training</p></li>
-<li><p><strong>opt</strong> (<em>str</em>) – optional(default = “rmsprop”): optimizer</p></li>
-<li><p><strong>folds</strong> (<em>int</em>) – optional (&gt;4, default = 5): number of folds in the k-folding</p></li>
-<li><p><strong>dropout</strong> (<em>int</em>) – optional (default = 0.05): dropout rate in neural network</p></li>
+<li><p><strong>opt</strong> (<em>str</em>) – optional(default = “adam”): optimizer</p></li>
+<li><p><strong>folds</strong> (<em>int</em>) – optional (default = 5): number of folds in the k-folding</p></li>
+<li><p><strong>dropout</strong> (<em>int</em>) – optional (default = 0.01): dropout rate in neural network</p></li>
 <li><p><strong>ex_cols</strong> (<em>int</em>) – optional (default = 5): number of columns excluded when importing</p></li>
 <li><p><strong>summary</strong> (<em>bool</em>) – optional(default = False): show the summary of the neural network</p></li>
 <li><p><strong>plot</strong> (<em>bool</em>) – optional(default = False): show the plot of training history, actual vs 
