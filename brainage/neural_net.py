@@ -133,7 +133,7 @@ def training(features, targets, model, epochs, **kwargs):
         logger.info(f"Training the model with dataset {i}/{n_splits} for {epochs} epochs ")
         history = model.fit(x_train, y_train, epochs=epochs,
                             batch_size=32,
-                            validation_split=0.1,
+                            validation_data = (x_test, y_test),
                             verbose = 0)
         logger.info('Training successfully ended ')
 
@@ -194,8 +194,8 @@ def neural_net_parsing():
     The neural_net_parsing function is designed to parse command-line arguments and execute a neural
     network training process based on the provided parameters. It reads a dataset from a file,
     preprocesses the data, creates and trains a neural network model using k-fold cross-validation,
-    and optionally performs a grid search for hyperparameter optimization. As output the function prints
-    the model structure   
+    and optionally performs a grid search for hyperparameter optimization.
+    As output the function prints the model structure   
 
     The parameters listed below are not parameters of the functions, but are parsing arguments
     to be used in terminal, when executing the program as follows:
@@ -217,17 +217,17 @@ def neural_net_parsing():
     :type target: str
     :param location: optional: location of the file, i.e. folder containing it
     :type location: str
-    :param hidden_layers: optional (default = 1): number of hidden layers in the neural network
+    :param hidden_layers: optional (default = 2): number of hidden layers in the neural network
     :type hidden_layers: int
-    :param hidden_nodes: optional (default = 32): number of hidden layer nodes in the neural network
+    :param hidden_nodes: optional (default = 48): number of hidden layer nodes in the neural network
     :type hidden_nodes: int
     :param epochs: optional (default = 300): number of epochs of training
     :type epochs: int
-    :param opt: optional(default = "rmsprop"): optimizer 
+    :param opt: optional(default = "adam"): optimizer 
     :type opt: str
-    :param folds: optional (>4, default = 5): number of folds in the k-folding
+    :param folds: optional (default = 5): number of folds in the k-folding
     :type folds: int
-    :param dropout: optional (default = 0.05): dropout rate in neural network
+    :param dropout: optional (default = 0.01): dropout rate in neural network
     :type dropout: int
     :param ex_cols: optional (default = 5): number of columns excluded when importing
     :type ex_cols: int
@@ -257,26 +257,26 @@ def neural_net_parsing():
                         help="Name of the column holding target values")
     parser.add_argument("--location",
                          help="Location of the file, i.e. folder containing it")
-    parser.add_argument("--hidden_layers", type = int, default = 1,
-                         help="Number of hidden layers in the neural network")
-    parser.add_argument("--hidden_nodes", type = int, default = 32,
-                         help="Number of hidden layer nodes in the neural network")
+    parser.add_argument("--hidden_layers", type = int, default = 2,
+                         help="Number of hidden layers in the neural network (default 2)")
+    parser.add_argument("--hidden_nodes", type = int, default = 48,
+                         help="Number of hidden layer nodes in the neural network (deafult 48)")
     parser.add_argument("--epochs", type = int, default = 300,
-                         help="Number of epochs of training (default 50)")
-    parser.add_argument("--opt", default= "rmsprop",
-                         help="Optimizer (default = 'rmsprop')")
+                         help="Number of epochs of training (default 300)")
+    parser.add_argument("--opt", default= "adam",
+                         help="Optimizer (default 'adam')")
     parser.add_argument("--folds", type = int, default = 5,
-                         help="Number of folds in the k-folding (>4, default 5)")
-    parser.add_argument("--dropout", type = float, default = 0.05,
-                         help="Dropout rate in the NN (default 0.05)")
+                         help="Number of folds in the k-folding (default 5)")
+    parser.add_argument("--dropout", type = float, default = 0.01,
+                         help="Dropout rate in the NN (default 0.01)")
     parser.add_argument("--ex_cols", type = int, default = 5,
-                         help="Number of columns excluded when importing (default 3)")
+                         help="Number of columns excluded when importing (default 5)")
     parser.add_argument("--summary", action="store_true",
                          help="Show the summary of the neural network")
     parser.add_argument("--plot", action="store_true",
                          help="Show the plot of training history and actual vs predicted brain age")
     parser.add_argument("--group", default = 'DX_GROUP',
-                        help="Name of the column indicating the group (experimental vs control) (default DX_Group)")
+                        help="Name of column indicating the group (exp vs ctrl) (default DX_Group)")
     parser.add_argument("--overs", action = 'store_true', default = False,
                         help="Oversampling, done in order to have"
                         "a flat distribution of targets (default = False).")
