@@ -1,3 +1,7 @@
+'''
+Utils
+'''
+
 import os
 
 from collections import defaultdict
@@ -68,21 +72,21 @@ def check_for_spurious(df: pd.DataFrame, show: bool = False) -> pd.DataFrame:
 
     """
     # Store a counter of instances of missing data for each feature
-    dctSpurious = defaultdict(int)
+    dct_spurious = defaultdict(int)
     for i in range(df.shape[1]):
         for j in range(df.shape[0]):
             value = df.iloc[j, i]
             if value == -9999 or value == 0:
-                dctSpurious[df.columns[i]] += 1
+                dct_spurious[df.columns[i]] += 1
 
     # Create a pandas dataframe with the gathered data and
-    dtfSpurious = pd.DataFrame([dctSpurious.keys(),
-                                dctSpurious.values()])
-    dtfSpurious = dtfSpurious.transpose()
-    dtfSpurious.columns = ["Feature name", "Number of missing values"]
+    dtf_spurious = pd.DataFrame([dct_spurious.keys(),
+                                dct_spurious.values()])
+    dtf_spurious = dtf_spurious.transpose()
+    dtf_spurious.columns = ["Feature name", "Number of missing values"]
     if show:
-        print(dtfSpurious)
-    return dtfSpurious
+        print(dtf_spurious)
+    return dtf_spurious
 
 
 def handle_spurious(df: pd.DataFrame, *args: str) -> pd.DataFrame:
@@ -154,9 +158,9 @@ def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
 
     # Look for high correlated features
     # List containing info on correlated features
-    lstCorrelated = []
-    # Iterate over the correlation matrix and check if there are correlation values over the user-set
-    # threshold and add the respective features to a dataframe
+    lst_correlated = []
+    # Iterate over the correlation matrix and check if there are correlation values over the
+    # user-set threshold and add the respective features to a dataframe
     for i in range(correlation_dataframe.shape[0]):
         for column in correlation_dataframe.columns:
             value = correlation_dataframe[column].iat[i]
@@ -165,22 +169,22 @@ def get_correlation(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
                     # column is the name of the feature
                     # correlation_dataframe.index[i] is the feature comparing against
                     # value is the correlation coefficient between the above
-                    lstCorrelated.append([column,
+                    lst_correlated.append([column,
                                           correlation_dataframe.index[i],
                                           value]
                                          )
     # Create the dataframe
-    dtfHighlyCorrelated = pd.DataFrame(lstCorrelated)
-    dtfHighlyCorrelated.columns = ["Feature", "Against-feature", "corr-value"]
+    dtf_highly_correlated = pd.DataFrame(lst_correlated)
+    dtf_highly_correlated.columns = ["Feature", "Against-feature", "corr-value"]
 
-    return dtfHighlyCorrelated
+    return dtf_highly_correlated
 
 
 def check_site_correlation(df: pd.DataFrame) -> pd.DataFrame:
     """
     Check if there are features influenced by the site where the image got shot.
-    Checks whether the mean of each feature is similar across sites. If it's not, then there's bias in
-    the image acquisition.
+    Checks whether the mean of each feature is similar across sites. If it's not, 
+    then there's bias in the image acquisition.
 
     Args:
         df: Pandas dataframe containing all the features labeled according the site of origin.
@@ -192,32 +196,32 @@ def check_site_correlation(df: pd.DataFrame) -> pd.DataFrame:
 
     df_length = df.shape[0]
     # Iterate over the df and save in a list all site names
-    lstSiteNames = []
+    lst_site_names = []
     site_column = df.columns[0]
     for i in range(df_length):
         site_name = df[site_column].iat[i]
         site_name = site_name.split("_")[0]
-        if site_name not in lstSiteNames:
-            lstSiteNames.append(site_name)
+        if site_name not in lst_site_names:
+            lst_site_names.append(site_name)
 
     # Data structure for storing mean values
-    dtfSiteFeatures = pd.DataFrame(np.zeros((len(df.columns[1:]), len(lstSiteNames))),
+    dtf_site_features = pd.DataFrame(np.zeros((len(df.columns[1:]), len(lst_site_names))),
                                    index=df.columns[1:],
-                                   columns=lstSiteNames)
+                                   columns=lst_site_names)
 
     # Calculate the mean of each feature for each site separately.
     # Slow asf, needs refactoring.
     temp_feature_value = []
-    for site in lstSiteNames:
+    for site in lst_site_names:
         for feature in df.columns[1:]:
             for i in range(df_length):
                 if site in df[site_column].iat[i]:
                     temp_feature_value.append(df[feature].iat[i])
-            dtfSiteFeatures[site][feature] = np.mean(temp_feature_value)
+            dtf_site_features[site][feature] = np.mean(temp_feature_value)
             # Resets the array
             temp_feature_value = []
 
-    return dtfSiteFeatures
+    return dtf_site_features
 
 
 def get_data(filename, target_col, ex_cols=0, **kwargs):
@@ -235,7 +239,7 @@ def get_data(filename, target_col, ex_cols=0, **kwargs):
 
                    - **group_col** (*str*): (optional): Name of the group column .
                    - **site_col** (*str*): (optional): Name of the site column for harmonization.
-                   - **overs** (*bool*): (optional): Boolean flag in order to perform SmoteR oversampling.
+                   - **overs** (*bool*): (optional): Boolean flag for SmoteR oversampling.
     :return: NumPy arrays of features, targets, and optionally the group.
     :rtype: tuple(numpy.ndarray, numpy.ndarray, numpy.ndarray or None)
     """
@@ -377,7 +381,6 @@ def new_prediction(features, targets, model):
     print("R-squared on exp:", r2)
 
     pad_new = y_pred.ravel()-targets
-    
     axa.scatter(targets, y_pred, color = 'k', alpha =0.5,
                 label =f'MAE : {mae:.2} y\n$R^2$ : {r2:.2}')
 
@@ -394,7 +397,6 @@ def new_prediction(features, targets, model):
     axa.legend(fontsize = 16)
     axa.grid(False)
     # plt.savefig('linear_reg_exp.png', transparent = True)
-    
     return pad_new, mae, r2
 
 def sites_barplot(numbers, sites):
@@ -416,7 +418,8 @@ def sites_barplot(numbers, sites):
     grouped_df = grouped_df.sort_values(by='Numbers', ascending=False)
 
     # Plot the DataFrame
-    ax = grouped_df.plot.barh(x ='Sites', legend=False, color='RoyalBlue', width=0.7, figsize=(10, 6))
+    ax = grouped_df.plot.barh(x ='Sites', legend=False,
+                             color='RoyalBlue', width=0.7, figsize=(10, 6))
 
     # Set the labels and title
     ax.set_xlabel('MAE values')
@@ -442,4 +445,4 @@ if __name__ == "__main__":
     # df.to_csv('../data/abide_clean.csv', sep=';')
     # logger.info('Done')
 
-    
+

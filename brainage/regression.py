@@ -1,5 +1,8 @@
-import numpy as np
+'''
+Regression
+'''
 import argparse
+import numpy as np
 from loguru import logger
 import matplotlib.pyplot as plt
 
@@ -19,8 +22,9 @@ from utils import abs_path, get_data, p_value_emp, group_selection, new_predicti
 def regression(type, features, targets, n_splits):
 
     """
-    performs regression (using sklearn) with k-fold cross-validation with a specified number of splits on the
-    given dataset and prints evaluation metrics of the linear regression model
+    performs regression (using sklearn) with k-fold cross-validation with a
+    specified number of splits on the given dataset and
+    prints evaluation metrics of the linear regression model
     such as MAE (mean absolute error) and R-squared. Regressions models implemented are linear and
     gaussian. The function inizialize a plot that shows actual vs. predicted age for a control
     group of patients. 
@@ -80,7 +84,6 @@ def regression(type, features, targets, n_splits):
             kernel = C(1.0, (1, 1e2)) * Matern(length_scale=1.0, length_scale_bounds=(1, 1e2))
             model = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer = 5)
             model.fit(x_train, y_train)
-            
         # Predict on the test set
         y_pred = model.predict(x_test)
 
@@ -116,7 +119,7 @@ def regression(type, features, targets, n_splits):
     axc.legend(fontsize = 16)
     axc.grid(False)
     # plt.savefig('linear_reg_control.png', transparent = True)
-    
+
     return best_model, mae, r2, pad_control
 
 
@@ -172,14 +175,15 @@ def reg_parsing():
     """
 
     parser = argparse.ArgumentParser(description=
-                                     'Linear regression predicting the age of patients from magnetic resonance imaging')
+                                     'Linear regression predicting the age of patients from'
+                                       'magnetic resonance imaging')
 
     parser.add_argument("filename",
                          help="Name of the file that has to be analized if --location argument is"
                         " passed. Otherwise pass to filename the absolutepath of the file")
     parser.add_argument("type",
-                         help="Type of regression model that could be implemented. Could be 'l' for"
-                         "linear regression or 'g' for gaussian regression")
+                         help="Type of regression model that could be implemented. Could be 'l'"
+                         "for linear regression or 'g' for gaussian regression")
     parser.add_argument("--target", default = "AGE_AT_SCAN",
                         help="Name of the column holding target values")
     parser.add_argument("--location",
@@ -199,7 +203,7 @@ def reg_parsing():
     args = parser.parse_args()
 
     if args.folds > 4:
-        if args.type == "linear" or args.type == "gaussian": 
+        if args.type == "linear" or args.type == "gaussian":
             try:
                 args.filename = abs_path(args.filename,
                                         args.location) if args.location else args.filename

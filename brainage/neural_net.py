@@ -105,9 +105,9 @@ def training(features, targets, model, epochs, **kwargs):
     pad_control = []
 
     # Initializing figures for plotting and creating an array of colous
-    figh, axh = plt.subplots(figsize=(10,8))
+    _, axh = plt.subplots(figsize=(10,8))
 
-    figp, axp = plt.subplots(figsize=(10, 8))
+    _, axp = plt.subplots(figsize=(10, 8))
 
     colormap = cmaps.get_cmap('tab20')
     colors = [colormap(i) for i in range(n_splits + 1)]
@@ -116,7 +116,7 @@ def training(features, targets, model, epochs, **kwargs):
     initial_weights = model.get_weights()
 
     best_model = None # Initialization of the variable associated with best model (least mae)
-    mae_best = float('inf') 
+    mae_best = float('inf')
 
     # Performing k-fold cross-validation
     for i, (train_index, test_index) in enumerate(kf.split(features), 1):
@@ -182,7 +182,7 @@ def training(features, targets, model, epochs, **kwargs):
     # Setting plot labels and title
     axp.set_xlabel('Actual age [y]', fontsize = 20)
     axp.set_ylabel('Predicted age [y]', fontsize = 20)
-    axp.set_title(f'Actual vs. predicted age - control', fontsize = 24)
+    axp.set_title('Actual vs. predicted age - control', fontsize = 24)
 
     # Adding legend and grid to the plots
     axp.legend(loc = 'upper left', fontsize = 16)
@@ -296,7 +296,7 @@ def neural_net_parsing():
         features, targets, group = get_data(args.filename,
                                             args.target,
                                             args.ex_cols,
-                                            group_col = args.group, 
+                                            group_col = args.group,
                                             site_col = args.harm,
                                             overs = args.overs)
         features_control = group_selection(features, group, -1)
@@ -361,7 +361,7 @@ def neural_net_parsing():
                                         = grid_result.best_params_["model__hidden_nodes"],
                                         optimizer =
                                         grid_result.best_params_["model__optimizer"],
-                                        dropout = 
+                                        dropout =
                                         grid_result.best_params_['model__dropout'],
                                         summary = args.summary)
             model, _, _, pad_control = training(features_control,
