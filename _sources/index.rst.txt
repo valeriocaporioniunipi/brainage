@@ -18,7 +18,7 @@ Introduction
 The library contains programs performing statistical analysis on a preprocessed dataset of brain features. Input 
 data is a *.csv* file whose columns are features of patients and rows are different patients. 
 Statistical programs provided are a feed-foward neural network and some regression models; there are also some minor programs 
-necessary for the correct functioning of the library. In the API section you can find the details of such programs.
+necessary for the correct functioning of the library. 
 
 Contents
 --------
