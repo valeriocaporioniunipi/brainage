@@ -9,11 +9,11 @@ Example paper: Cole et al., Predicting brain age with deep learning from raw ima
   - [x] Hyperparameter optimization for the neural network
   - [x] Linear regression code (python) with global features as input
   - [x] Resampling
-  - [ ] Comparison between the regression models, regarding global features
-  - [ ] Evaluating the performance for local features, changing acquisition site
-  - [ ] Comparing the performance across different acquisition sites
-  - [ ] Update dependencies (automatic make html, requirements)
+  - [x] Comparison between the regression models, regarding global features
+  - [x] Evaluating the performance for local features, changing acquisition site
+  - [x] Comparing the performance across different acquisition sites
+  - [x] Update dependencies (automatic make html, requirements)
   - [x] Unit testing
-  - [ ] Autistic vs non-autistic datasets
-  - [ ] Slides
+  - [x] Autistic vs non-autistic datasets
+  - [x] Slides
 
